@@ -68,6 +68,8 @@ optimizer = torch.optim.Adam(model.parameters(), lr=learning_rate)
 
 
 # ---------- Training Loop ----------
+min_loss = np.ones(2) # initialization of the array which will contain the minimum loss
+
 epochs = 30000
 for epoch in range(epochs):
     # Reset gradients in order to not accumulate them in the .grad attribute during next epochs
@@ -90,6 +92,11 @@ for epoch in range(epochs):
     # Gradient descent: update the parameters in the direction stored in .grad() attribute
     optimizer.step()
 
+    # Keep track of the minimum loss
+    aux_loss = [epoch, loss.item()] # auxiliary array with the epoch and the corresponding loss
+    if aux_loss[1] <= min_loss[1]:
+        min_loss = [epoch, aux_loss[1]]
+
     # Let us create a plot which compare y_pred and y_tensor for the first epoch and then every 100 epochs
     # if epoch == 0 or (epoch + 1) % 100 == 0:     # epoch + 1 is needed because the counting starts from 0
     #     # Print the epoch and the corresponding loss
@@ -109,7 +116,7 @@ for epoch in range(epochs):
 
 
 # ---------- Visualization ----------
-# model.eval() # not useful for fully connected
+# model.eval() # not useful for fully connected network
 
 # Compute the prediction corresponding to the last epoch, without Autograd tracking
 with torch.no_grad(): # all commands in here, will be without attribute "grad_fn"
@@ -117,6 +124,9 @@ with torch.no_grad(): # all commands in here, will be without attribute "grad_fn
 
 # Print the final epoch with the corresponding loss
 print(f"The final epoch is {(epoch+1)}/{epochs} and the loss is {(loss.item())}")
+
+# Print the minimum loss and its epoch
+print(f"The minimum loss is {(min_loss[1])} and its epoch is {(min_loss[0]+1)}")
 
 # Final plot
 plt.figure(figsize=(8, 5))
