@@ -7,9 +7,11 @@
 import torch
 import torch.nn as nn
 import torch.optim as optim
+import torch.optim.lr_scheduler as lr_scheduler
 import matplotlib.pyplot as plt
 import numpy as np
 import math
+
 
 """------------------------------------------
  Goal: Create a function hard to approximate
@@ -27,39 +29,40 @@ phi1 = np.random.uniform(0, 2*math.pi)  # phase shift
 phi2 = np.random.uniform(0, 2*math.pi)  # phase shift
 w1 = (1+np.abs(omega1)**2)**(s/2)            # weight function
 w2 = (1+np.abs(omega2)**2)**(s/2)            # weight function
-F1 = 0.9                                     # amplitude
+F1 = 0.5                                     # amplitude
 F2 = np.sqrt(1-F1**2)                        # amplitude -> Normalization : F1^2 + F2^2 = 1 (Parseval's theorem)
 
 # Evaluate the Barron norm (p = 1)
 barron_norm = F1*w1 + F2*w2
 
 # Spatial domain
-x = torch.linspace(-1,1,N)
+x = torch.linspace(-1,1,N).view(-1, 1)
 
 # Create the function we want to approximate
 y = F1 * torch.sin(2*math.pi*omega1*x + phi1) + F2 * torch.sin(2*math.pi*omega2*x + phi2)
 
 # Visualization
 fig = plt.figure(1)
-plt.plot(x, W, color='red', linewidth=2)
+plt.plot(x, y, color='red', linewidth=2)
 plt.title(f'Function with Barron norm {barron_norm}')
 plt.xlabel('x')
 plt.ylabel('Target function')
 plt.grid(True)
 
 
-# ---------- Input Data and Target Function ----------
-x = np.linspace(-1, 1, 100).reshape(-1, 1) # we're creating 1000 points between -1 and 1, organized in one column
-y = x**2  # target function
+"""----------------------------------
+ Goal: Build the SNN and train it
+-------------------------------------"""
+
 
 # ---------- Network Architecture and Model Definition ----------
 # Define the number of neurons for each layer
 n_in = 1
-n_Hid1 = 100
+n_Hid1 = 2500
 n_out = 1
 
 # Set the learning rate
-learning_rate = 0.01
+learning_rate = 10**(-5)
 
 # Define a class which contains our training model.
 class NeuralNet(nn.Module): # our class "NeuralNet" inherits all methods and properties from the superclass nn.Module in PyTorch
@@ -93,11 +96,29 @@ error = nn.MSELoss()
 # Create the optimizer: it changes the "model.parameters()" (== the parameters of the network)
 optimizer = torch.optim.Adam(model.parameters(), lr=learning_rate)
 
+# Create and visualize a dictonary with all network's parameters
+#dict_Net_Param = model.state_dict()
+#for key, value in dict_Net_Param.items():
+#    print(f'Parameter: {key}. Values: {value} \n')
+
+# Parameter's initialization
+with torch.no_grad():
+    # Bias
+    nn.init.uniform_(model.InHid1.bias, a=-1, b=1)
+    #print(f'Initialized bias: {model.InHid1.bias}')
+
+    # Weight -> random +-1 value
+    init_weights = torch.where(model.InHid1.weight <= 0, -1, 1)
+    #print(init_weights)
+    model.InHid1.weight.copy_(init_weights)
+    #print(f'Initialized weight: {model.InHid1.weight}')
+
 
 # ---------- Training Loop ----------
 min_loss = np.ones(2) # initialization of the array which will contain the minimum loss
 
-epochs = 30000
+epochs = 600000
+loss_history = np.zeros(epochs) # initialization of the array which will contain all errors
 for epoch in range(epochs):
     # Reset gradients in order to not accumulate them in the .grad attribute during next epochs
     optimizer.zero_grad()
@@ -124,26 +145,11 @@ for epoch in range(epochs):
     if aux_loss[1] <= min_loss[1]:
         min_loss = [epoch, aux_loss[1]]
 
-    # Let us create a plot which compare y_pred and y_tensor for the first epoch and then every 100 epochs
-    # if epoch == 0 or (epoch + 1) % 100 == 0:     # epoch + 1 is needed because the counting starts from 0
-    #     # Print the epoch and the corresponding loss
-    #     print(f"The current epoch is {(epoch+1)}/{epochs}. The loss is: ", loss.item())
-    #
-    #     # Plot y_tensor and y_pred at that epoch. For this, it is important that Pytorch doesn't track y_pred anymore so, to this end, we will use the function ".detach()"
-    #     plt.plot(x, y, label='Target function $y(x)$', color='blue', linewidth=2) # target
-    #     plt.plot(x, y_pred.detach().numpy(), label='Output of the network', color='red', linewidth=2) # output of the network
-    #
-    #     # Plot attributes
-    #     plt.xlabel('Input values $x$')
-    #     plt.ylabel('$x^2$')
-    #     plt.title('Target VS Prediction')
-    #     plt.legend(loc='best')
-    #
-    #     plt.show()
+    # add the loss to the array
+    loss_history[epoch] = loss.item()
 
 
 # ---------- Visualization ----------
-# model.eval() # not useful for fully connected network
 
 # Compute the prediction corresponding to the last epoch, without Autograd tracking
 with torch.no_grad(): # all commands in here, will be without attribute "grad_fn"
@@ -156,15 +162,44 @@ print(f"The final epoch is {(epoch+1)}/{epochs} and the loss is {(loss.item())}"
 print(f"The minimum loss is {(min_loss[1])} and its epoch is {(min_loss[0]+1)}")
 
 # Final plot
-plt.figure(figsize=(8, 5))
-plt.plot(x, y, label='Target function $x^2$', color='blue', linewidth=2)
-plt.plot(x, y_pred_final, label='Network Approximation', color='red')
+fig, ax = plt.subplots(1, 2, figsize=(10,5))
+ax[1].plot(x, y, label='Target function', color='green', linewidth=2)
+ax[1].plot(x, y_pred_final, label='Network Approximation', color='red')
 
-# Plot attributes
-plt.xlabel('Input data')
-plt.ylabel('$x^2$')
-plt.title('Target $x^2$ VS Network Approximation')
-plt.legend(loc='best')
-plt.grid(True)
+# Plots attributes
+ax[1].set_xlabel('Input data')
+ax[1].set_ylabel('Target function')
+ax[1].set_title('Target Barron Function VS Network Approximation')
+ax[1].legend(loc='best')
+ax[1].grid(True)
 
-plt.show()
+ax[0].semilogy(loss_history, label='Training Loss', color='blue', linewidth=2)
+ax[0].set_xlabel('Epochs')
+ax[0].tick_params(axis='x', rotation=45)
+ax[0].set_ylabel('MSE Loss')
+ax[0].set_title('Evolution of Loss (log scale)')
+
+
+"""------------------
+Goal: Visualizations
+---------------------"""
+
+# Position of activated neurons:  0 = y = weight * x + bias =>  x = - bias/weight
+zero_pos = -model.InHid1.bias.flatten()/model.InHid1.weight.flatten()
+
+# Select the activated neurons whose position is between -1 and 1
+pos_in_range = torch.bitwise_and(zero_pos >= -1.0, zero_pos <= 1.0)
+
+# Select the weights associate to the activated neurons
+weight_in_range = model.Hid1Out.weight.flatten()[pos_in_range]
+
+# Plot of activated weights
+plt.figure(1)
+plt.hist(weight_in_range.detach().numpy(), bins=50, color='blue', alpha=0.5, label='Weight')
+
+# Plot of activated neurons
+plt.figure(2)
+plt.stem(zero_pos[pos_in_range].detach(), weight_in_range.detach(), label='Weight')
+
+# Print how many neurons are activated between -1 and 1
+print(f'{torch.sum(pos_in_range)} are inside the range')
