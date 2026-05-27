@@ -62,7 +62,6 @@ plt.title(f'Function with Barron norm {barron_norm}')
 plt.xlabel('x')
 plt.ylabel('Target function')
 plt.grid(True)
-plt.clf()
 plt.close()
 
 
