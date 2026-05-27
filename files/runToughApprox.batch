@@ -8,12 +8,12 @@
 #SBATCH --mem=16G                                         # RAM
 #SBATCH --cpus-per-task=1                                 # Number of CPU cores
 #SBATCH --ntasks=1                                        # Number of tasks (usually 1)
-#SBATCH --array=0-0                                       # uncomment if you want a job array
+##SBATCH --array=0-0                                       # uncomment if you want a job array
 
 
 
-# SEED=$SLURM_ARRAY_TASK_ID
-# echo "starting script with units: ${SLURM_ARRAY_JOB_ID}"
+SEED=$SLURM_ARRAY_TASK_ID
+echo "starting script with seed: ${SEED}"
 
 #units=(100 1000 10000)
 #UNITS=${units[$SLURM_ARRAY_TASK_ID]}
@@ -21,7 +21,7 @@
 
 # Run the script
 export PYTHONUNBUFFERED=1
-srun uv run ~/Repositories/ProjectMasterThesis/Neural-Net-Thesis-/files/Example\ Codes/ToughApprox.py --seed=${1} --lr=${2}
+srun uv run ~/Repositories/ProjectMasterThesis/Neural-Net-Thesis-/files/Example\ Codes/ToughApprox.py --seed=${SEED} --lr=${1} --epochs=${2} --units=${3}
 
 
 ###########################################################
