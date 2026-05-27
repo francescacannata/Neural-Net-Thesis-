@@ -3,7 +3,7 @@
  Goal: Find a function hard to approximate with a SNN
  Author: Francesca Cannata
 ---------------------------------------------------------"""
-
+import os
 import torch
 import torch.nn as nn
 import torch.optim as optim
@@ -20,6 +20,7 @@ import copy
 ---------------------------------------------"""
 # In order to have the same random generation each time
 np.random.seed(0)
+# TODO set pytorch seed
 
 # Parameters
 N = 2**10
@@ -201,6 +202,7 @@ ax[0].tick_params(axis='x', rotation=45)
 ax[0].set_ylabel('MSE Loss')
 ax[0].set_title('Evolution of Loss (log scale)')
 
+plt.savefig(os.path.join('results', 'EvolutionLossApprox.png'))
 
 """------------------
 Goal: Visualizations
@@ -218,10 +220,12 @@ weight_in_range = model.Hid1Out.weight.flatten()[pos_in_range]
 # Plot of activated weights
 plt.figure(1)
 plt.hist(weight_in_range.detach().numpy(), bins=50, color='blue', alpha=0.5, label='Weight')
+plt.savefig(os.path.join('results', 'ActiveWeights.png'))
 
 # Plot of activated neurons
 plt.figure(2)
 plt.stem(zero_pos[pos_in_range].detach(), weight_in_range.detach(), label='Weight')
+plt.savefig(os.path.join('results', 'ActiveNeurons.png'))
 
 # Print how many neurons are activated between -1 and 1
 print(f'{torch.sum(pos_in_range)} are inside the range')
