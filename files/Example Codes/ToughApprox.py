@@ -58,11 +58,11 @@ plt.grid(True)
 # ---------- Network Architecture and Model Definition ----------
 # Define the number of neurons for each layer
 n_in = 1
-n_Hid1 = 2500
+n_Hid1 = 2
 n_out = 1
 
-# Set the learning rate
-learning_rate = 10**(-5)
+# Set the initial learning rate
+learning_rate = 0.01
 
 # Define a class which contains our training model.
 class NeuralNet(nn.Module): # our class "NeuralNet" inherits all methods and properties from the superclass nn.Module in PyTorch
@@ -96,6 +96,9 @@ error = nn.MSELoss()
 # Create the optimizer: it changes the "model.parameters()" (== the parameters of the network)
 optimizer = torch.optim.Adam(model.parameters(), lr=learning_rate)
 
+# Change the learning rate dynamically with the Scheduler algorithm: we want to adjust it during the training (Step Decay = StepLR or Exponential Decay = ExponentialLR)
+scheduler = lr_scheduler.StepLR(optimizer, step_size=10, gamma= 0.01)
+
 # Create and visualize a dictonary with all network's parameters
 #dict_Net_Param = model.state_dict()
 #for key, value in dict_Net_Param.items():
@@ -117,7 +120,7 @@ with torch.no_grad():
 # ---------- Training Loop ----------
 min_loss = np.ones(2) # initialization of the array which will contain the minimum loss
 
-epochs = 600000
+epochs = 100
 loss_history = np.zeros(epochs) # initialization of the array which will contain all errors
 for epoch in range(epochs):
     # Reset gradients in order to not accumulate them in the .grad attribute during next epochs
@@ -139,6 +142,9 @@ for epoch in range(epochs):
 
     # Gradient descent: update the parameters in the direction stored in .grad() attribute
     optimizer.step()
+
+    # Update the learning rate when reaching the "step_size"
+    scheduler.step()
 
     # Keep track of the minimum loss
     aux_loss = [epoch, loss.item()] # auxiliary array with the epoch and the corresponding loss
