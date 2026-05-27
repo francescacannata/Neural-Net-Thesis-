@@ -3,6 +3,7 @@
  Goal: Find a function hard to approximate with a SNN
  Author: Francesca Cannata
 ---------------------------------------------------------"""
+import argparse
 import os
 import torch
 import torch.nn as nn
@@ -14,13 +15,30 @@ import math
 import copy
 
 
+# TODO read config from command line argument
+parser = argparse.ArgumentParser(description='Training the network with different settings.')
+parser.add_argument('--seed', type=int, default=0, help='Random seed (default: 0).')
+parser.add_argument('--lr', type=float, default=0.01, help='Initial learning rate (default: 0.01)-')
+parser.add_argument('--epochs', type=int, default=100, help='Number of epochs (default: 100).')
+parser.add_argument('--units', type=int, default=10, help='Numbers of hidden neurons (default: 10).')
+
+args = parser.parse_args() # Convert argument strings to objects and assign them as attributes of the namespace
+print(f'This is the network\'s setting. \n Seed = {args.seed} \n Initial learning rate = {args.lr} \n Number of epochs = {args.epochs} \n Number of hidden neurons = {args.units}')
+
+# TODO add config to result file names
+
+# TODO add parameters to batch file
+
+
 """------------------------------------------
  Goal: Create a function hard to approximate
        with two frequency components
 ---------------------------------------------"""
 # In order to have the same random generation each time
-np.random.seed(0)
+np.random.seed(args.seed)
+
 # TODO set pytorch seed
+torch.manual_seed(args.seed)
 
 # Parameters
 N = 2**10
@@ -55,16 +73,14 @@ plt.grid(True)
 """----------------------------------
  Goal: Build the SNN and train it
 -------------------------------------"""
-
-
 # ---------- Network Architecture and Model Definition ----------
 # Define the number of neurons for each layer
 n_in = 1
-n_Hid1 = 2
+n_Hid1 = args.units
 n_out = 1
 
-# Set the learning rate
-learning_rate = 0.01
+# Set the initial learning rate
+learning_rate = args.lr
 
 # Define a class which contains our training model.
 class NeuralNet(nn.Module): # our class "NeuralNet" inherits all methods and properties from the superclass nn.Module in PyTorch
@@ -101,13 +117,6 @@ optimizer = optim.Adam(model.parameters(), lr=learning_rate)
 # Change the learning rate dynamically with the Scheduler algorithm: we want to adjust it during the training (Step Decay = StepLR or Exponential Decay = ExponentialLR)
 scheduler = lr_scheduler.StepLR(optimizer, step_size=10, gamma= 0.01)
 
-# Create and visualize a dictonary with all network's parameters
-# dict_Net_Param = model.state_dict()
-# for key, value in dict_Net_Param.items():
-#    print(f'Parameter: {key}. Values: {value} \n')
-
-
-
 # Parameter's initialization
 with torch.no_grad():
     # Bias
@@ -122,10 +131,11 @@ with torch.no_grad():
 
 
 # ---------- Training Loop ----------
-min_loss = np.ones(2) # initialization of the array which will contain the minimum loss
-best_model = {}       # initialization of the dictionary which will contain the best model
+min_loss = float('inf') # initialization of the minimum loss at infinity
+min_epoch = 0           # initialization of the epoch corresponding to the minimum loss
+best_model = {}         # initialization of the dictionary which will contain the best model
 
-epochs = 100
+epochs = args.epochs
 loss_history = np.zeros(epochs) # initialization of the array which will contain all errors
 for epoch in range(epochs):
 
@@ -152,10 +162,11 @@ for epoch in range(epochs):
     # Update the learning rate when reaching the "step_size"
     scheduler.step()
 
-    # Keep track of the minimum loss and the corresponding model
-    aux_loss = [epoch, loss.item()] # auxiliary array with the epoch and the corresponding loss
-    if aux_loss[1] <= min_loss[1]:
-        min_loss = [epoch, aux_loss[1]]
+    # Keep track of the minimum loss, its epoch and the corresponding model
+    aux_loss = loss.item() # auxiliary array with the epoch and the corresponding loss
+    if loss.item() < min_loss:
+        min_loss = loss.item()
+        min_epoch = epoch
 
         best_model = copy.deepcopy(model.state_dict())      # in order to have a copy (and not a reference) we need to use "copy.deepcopy()"
 
@@ -182,7 +193,7 @@ with torch.no_grad(): # all commands in here, will be without attribute "grad_fn
 print(f"The final epoch is {(epoch+1)}/{epochs} and the loss is {(loss.item())}")
 
 # Print the minimum loss and its epoch
-print(f"The minimum loss is {(min_loss[1])} and its epoch is {(min_loss[0]+1)}")
+print(f"The minimum loss is {(min_loss)} and its epoch is {(min_epoch+1)}")
 
 # Final plot
 fig, ax = plt.subplots(1, 2, figsize=(10,5))
@@ -202,10 +213,10 @@ ax[0].tick_params(axis='x', rotation=45)
 ax[0].set_ylabel('MSE Loss')
 ax[0].set_title('Evolution of Loss (log scale)')
 
-os.makedirs('results', exist_ok=True)
-plt.savefig(os.path.join('results', 'EvolutionLossApprox.png'))
-plt.clf()
-plt.close()
+os.makedirs('results', exist_ok=True) # it creates a new folder
+plt.savefig(os.path.join('results', f'LossApprox_Epochs_{args.epochs}_HidNeurons_{args.units}.png'))
+plt.clf() # clear fig
+plt.close() # close fig
 
 """------------------
 Goal: Visualizations
@@ -223,14 +234,14 @@ weight_in_range = model.Hid1Out.weight.flatten()[pos_in_range]
 # Plot of activated weights
 plt.figure(1)
 plt.hist(weight_in_range.detach().numpy(), bins=50, color='blue', alpha=0.5, label='Weight')
-plt.savefig(os.path.join('results', 'ActiveWeights.png'))
+plt.savefig(os.path.join('results', f'ActiveWeights_Epochs_{args.epochs}_HidNeurons_{args.units}.png'))
 plt.clf()
 plt.close()
 
 # Plot of activated neurons
 plt.figure(2)
 plt.stem(zero_pos[pos_in_range].detach(), weight_in_range.detach(), label='Weight')
-plt.savefig(os.path.join('results', 'ActiveNeurons.png'))
+plt.savefig(os.path.join('results', f'ActiveNeurons_Epochs_{args.epochs}_HidNeurons_{args.units}.png'))
 plt.clf()
 plt.close()
 

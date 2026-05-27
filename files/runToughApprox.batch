@@ -21,7 +21,7 @@
 
 # Run the script
 export PYTHONUNBUFFERED=1
-srun uv run ~/Repositories/ProjectMasterThesis/Neural-Net-Thesis-/files/Example\ Codes/ToughApprox.py
+srun uv run ~/Repositories/ProjectMasterThesis/Neural-Net-Thesis-/files/Example\ Codes/ToughApprox.py --seed=${1} --lr=${2}
 
 
 ###########################################################
