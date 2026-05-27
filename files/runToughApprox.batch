@@ -13,7 +13,7 @@
 
 
 SEED=$SLURM_ARRAY_TASK_ID
-echo "starting script with seed: ${SEED}"
+echo "starting script with seed: $SEED"
 
 #units=(100 1000 10000)
 #UNITS=${units[$SLURM_ARRAY_TASK_ID]}
@@ -21,7 +21,7 @@ echo "starting script with seed: ${SEED}"
 
 # Run the script
 export PYTHONUNBUFFERED=1
-srun uv run ~/Repositories/ProjectMasterThesis/Neural-Net-Thesis-/files/Example\ Codes/ToughApprox.py --seed=${SEED} --lr=${1} --epochs=${2} --units=${3}
+srun uv run ~/Repositories/ProjectMasterThesis/Neural-Net-Thesis-/files/Example\ Codes/ToughApprox.py --seed=$SEED --lr=${1} --epochs=${2} --units=${3}
 
 
 ###########################################################
