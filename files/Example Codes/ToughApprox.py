@@ -204,6 +204,8 @@ ax[0].set_title('Evolution of Loss (log scale)')
 
 os.makedirs('results', exist_ok=True)
 plt.savefig(os.path.join('results', 'EvolutionLossApprox.png'))
+plt.clf()
+plt.close()
 
 """------------------
 Goal: Visualizations
@@ -222,11 +224,15 @@ weight_in_range = model.Hid1Out.weight.flatten()[pos_in_range]
 plt.figure(1)
 plt.hist(weight_in_range.detach().numpy(), bins=50, color='blue', alpha=0.5, label='Weight')
 plt.savefig(os.path.join('results', 'ActiveWeights.png'))
+plt.clf()
+plt.close()
 
 # Plot of activated neurons
 plt.figure(2)
 plt.stem(zero_pos[pos_in_range].detach(), weight_in_range.detach(), label='Weight')
 plt.savefig(os.path.join('results', 'ActiveNeurons.png'))
+plt.clf()
+plt.close()
 
 # Print how many neurons are activated between -1 and 1
 print(f'{torch.sum(pos_in_range)} are inside the range')
