@@ -11,6 +11,7 @@ import torch.optim.lr_scheduler as lr_scheduler
 import matplotlib.pyplot as plt
 import numpy as np
 import math
+import copy
 
 
 """------------------------------------------
@@ -61,7 +62,7 @@ n_in = 1
 n_Hid1 = 2
 n_out = 1
 
-# Set the initial learning rate
+# Set the learning rate
 learning_rate = 0.01
 
 # Define a class which contains our training model.
@@ -94,15 +95,17 @@ model = NeuralNet()
 error = nn.MSELoss()
 
 # Create the optimizer: it changes the "model.parameters()" (== the parameters of the network)
-optimizer = torch.optim.Adam(model.parameters(), lr=learning_rate)
+optimizer = optim.Adam(model.parameters(), lr=learning_rate)
 
 # Change the learning rate dynamically with the Scheduler algorithm: we want to adjust it during the training (Step Decay = StepLR or Exponential Decay = ExponentialLR)
 scheduler = lr_scheduler.StepLR(optimizer, step_size=10, gamma= 0.01)
 
 # Create and visualize a dictonary with all network's parameters
-#dict_Net_Param = model.state_dict()
-#for key, value in dict_Net_Param.items():
+# dict_Net_Param = model.state_dict()
+# for key, value in dict_Net_Param.items():
 #    print(f'Parameter: {key}. Values: {value} \n')
+
+
 
 # Parameter's initialization
 with torch.no_grad():
@@ -119,10 +122,12 @@ with torch.no_grad():
 
 # ---------- Training Loop ----------
 min_loss = np.ones(2) # initialization of the array which will contain the minimum loss
+best_model = {}       # initialization of the dictionary which will contain the best model
 
 epochs = 100
 loss_history = np.zeros(epochs) # initialization of the array which will contain all errors
 for epoch in range(epochs):
+
     # Reset gradients in order to not accumulate them in the .grad attribute during next epochs
     optimizer.zero_grad()
 
@@ -146,14 +151,25 @@ for epoch in range(epochs):
     # Update the learning rate when reaching the "step_size"
     scheduler.step()
 
-    # Keep track of the minimum loss
+    # Keep track of the minimum loss and the corresponding model
     aux_loss = [epoch, loss.item()] # auxiliary array with the epoch and the corresponding loss
     if aux_loss[1] <= min_loss[1]:
         min_loss = [epoch, aux_loss[1]]
 
+        best_model = copy.deepcopy(model.state_dict())      # in order to have a copy (and not a reference) we need to use "copy.deepcopy()"
+
+    # Let us create a plot which compare y_pred and y_tensor for the first epoch and then every 100 epochs
+    if epoch == 0 or (epoch + 1) % 100 == 0:     # epoch + 1 is needed because the counting starts from 0
+        # Print the epoch and the corresponding loss
+        print(f"The current epoch is {(epoch+1)}/{epochs}. The loss is: ", loss.item())
+
     # add the loss to the array
     loss_history[epoch] = loss.item()
 
+# To be sure the net uses the best model found, we load it with "model.load_state_dict()"
+model.load_state_dict(best_model)
+
+print(f"The best model is {best_model}")
 
 # ---------- Visualization ----------
 
