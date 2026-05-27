@@ -15,7 +15,7 @@ import math
 import copy
 
 
-# TODO read config from command line argument
+# Read config from command line argument
 parser = argparse.ArgumentParser(description='Training the network with different settings.')
 parser.add_argument('--seed', type=int, default=0, help='Random seed (default: 0).')
 parser.add_argument('--lr', type=float, default=0.01, help='Initial learning rate (default: 0.01)-')
@@ -25,19 +25,13 @@ parser.add_argument('--units', type=int, default=10, help='Numbers of hidden neu
 args = parser.parse_args() # Convert argument strings to objects and assign them as attributes of the namespace
 print(f'This is the network\'s setting. \n Seed = {args.seed} \n Initial learning rate = {args.lr} \n Number of epochs = {args.epochs} \n Number of hidden neurons = {args.units}')
 
-# TODO add config to result file names
-
-# TODO add parameters to batch file
-
 
 """------------------------------------------
  Goal: Create a function hard to approximate
        with two frequency components
 ---------------------------------------------"""
-# In order to have the same random generation each time
+# In order to have the same random generation each time (both in numpy and pytorch)
 np.random.seed(args.seed)
-
-# TODO set pytorch seed
 torch.manual_seed(args.seed)
 
 # Parameters
@@ -68,6 +62,8 @@ plt.title(f'Function with Barron norm {barron_norm}')
 plt.xlabel('x')
 plt.ylabel('Target function')
 plt.grid(True)
+plt.clf()
+plt.close()
 
 
 """----------------------------------
@@ -182,6 +178,7 @@ for epoch in range(epochs):
 model.load_state_dict(best_model)
 
 print(f"The best model is {best_model}")
+
 
 # ---------- Visualization ----------
 
