@@ -110,7 +110,7 @@ error = nn.MSELoss()
 optimizer = optim.Adam(model.parameters(), lr=learning_rate)
 
 # Change the learning rate dynamically with the Scheduler algorithm: we want to adjust it during the training (Step Decay = StepLR or Exponential Decay = ExponentialLR)
-scheduler = lr_scheduler.StepLR(optimizer, step_size=10000, gamma= 0.01)
+scheduler = lr_scheduler.StepLR(optimizer, step_size=10000, gamma= 0.1)
 
 # Parameter's initialization
 with torch.no_grad():
