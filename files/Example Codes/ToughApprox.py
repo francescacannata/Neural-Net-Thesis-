@@ -202,6 +202,7 @@ ax[0].tick_params(axis='x', rotation=45)
 ax[0].set_ylabel('MSE Loss')
 ax[0].set_title('Evolution of Loss (log scale)')
 
+os.makedirs('results', exist_ok=True)
 plt.savefig(os.path.join('results', 'EvolutionLossApprox.png'))
 
 """------------------
