@@ -177,8 +177,6 @@ for epoch in range(epochs):
     # add the loss to the array
     loss_history[epoch] = loss.item()
 
-# Save the loss_history
-np.savetxt('Loss_History.csv', loss_history, delimiter=',')
 
 # To be sure the net uses the best model found, we load it with "model.load_state_dict()"
 model.load_state_dict(best_model)
@@ -219,6 +217,9 @@ os.makedirs(f'results_InitLR_{args.lr}_StepSize_{args.stepsize}', exist_ok=True)
 plt.savefig(os.path.join(f'results_InitLR_{args.lr}_StepSize_{args.stepsize}', f'LossApprox_Epochs_{args.epochs}_HidNeurons_{args.units}.png'))
 plt.clf() # clear fig
 plt.close() # close fig
+
+# Save the loss_history
+np.savetxt(os.path.join(f'results_InitLR_{args.lr}_StepSize_{args.stepsize}','Loss_History.csv'), loss_history, delimiter=',', header='Epoch, Loss Value', comments='')
 
 
 """------------------
