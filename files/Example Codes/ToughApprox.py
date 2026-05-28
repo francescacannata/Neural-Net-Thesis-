@@ -177,6 +177,9 @@ for epoch in range(epochs):
     # add the loss to the array
     loss_history[epoch] = loss.item()
 
+# Save the loss_history
+np.savetxt('Loss_History.csv', loss_history, delimiter=',')
+
 # To be sure the net uses the best model found, we load it with "model.load_state_dict()"
 model.load_state_dict(best_model)
 print(f"The best model is {best_model}")
