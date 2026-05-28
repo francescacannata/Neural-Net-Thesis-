@@ -11,6 +11,7 @@ import torch.optim as optim
 import torch.optim.lr_scheduler as lr_scheduler
 import matplotlib.pyplot as plt
 import numpy as np
+import pandas as pd
 import math
 import copy
 
@@ -218,8 +219,11 @@ plt.savefig(os.path.join(f'results_InitLR_{args.lr}_StepSize_{args.stepsize}', f
 plt.clf() # clear fig
 plt.close() # close fig
 
-# Save the loss_history
-np.savetxt(os.path.join(f'results_InitLR_{args.lr}_StepSize_{args.stepsize}','Loss_History.csv'), loss_history, delimiter=',', header='Epoch, Loss Value', comments='')
+# Create a dataframe with the epochs the loss_history and save it
+loss_history_dataframe = pd.DataFrame({'Epoch': np.arange(args.epochs),
+                            'Loss Value': loss_history})
+loss_history_dataframe.to_csv(os.path.join(f'results_InitLR_{args.lr}_StepSize_{args.stepsize}','Loss_History.csv'), index=False)
+#np.savetxt(os.path.join(f'results_InitLR_{args.lr}_StepSize_{args.stepsize}','Loss_History.csv'), loss_history, delimiter=',', header='Epoch, Loss Value', comments='')
 
 
 """------------------
