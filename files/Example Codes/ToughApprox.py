@@ -157,7 +157,7 @@ for epoch in range(epochs):
     optimizer.step()
 
     # Update the learning rate when reaching the "step_size" and when it is grater than or equal to 10^-5 (lower bound)
-    if scheduler.get_last_lr()[0] > 10**{-5}:   # scheduler.get_last_lr()[0] gives us the value of the learning rate in the first position
+    if scheduler.get_last_lr()[0] > 10**(-5):   # scheduler.get_last_lr()[0] gives us the value of the learning rate in the first position
         scheduler.step()
 
 
