@@ -18,7 +18,9 @@ import copy
 # Read config from command line argument
 parser = argparse.ArgumentParser(description='Training the network with different settings.')
 parser.add_argument('--seed', type=int, default=0, help='Random seed (default: 0).')
-parser.add_argument('--lr', type=float, default=0.01, help='Initial learning rate (default: 0.01)-')
+parser.add_argument('--lr', type=float, default=0.01, help='Initial learning rate (default: 0.01).')
+parser.add_argument('--stepsize', type=int, default=100000, help='Step size for the scheduler (default: 100k).')
+parser.add_argument('--gamma', type=float, default=0.1, help='Multiplicative factor for the scheduler (default: 0.1).')
 parser.add_argument('--epochs', type=int, default=100, help='Number of epochs (default: 100).')
 parser.add_argument('--units', type=int, default=10, help='Numbers of hidden neurons (default: 10).')
 
@@ -110,7 +112,7 @@ error = nn.MSELoss()
 optimizer = optim.Adam(model.parameters(), lr=learning_rate)
 
 # Change the learning rate dynamically with the Scheduler algorithm: we want to adjust it during the training (Step Decay = StepLR or Exponential Decay = ExponentialLR)
-scheduler = lr_scheduler.StepLR(optimizer, step_size=20000, gamma= 0.1)
+scheduler = lr_scheduler.StepLR(optimizer, step_size=args.stepsize, gamma= args.gamma)
 
 # Parameter's initialization
 with torch.no_grad():
@@ -154,8 +156,10 @@ for epoch in range(epochs):
     # Gradient descent: update the parameters in the direction stored in .grad() attribute
     optimizer.step()
 
-    # Update the learning rate when reaching the "step_size"
-    scheduler.step()
+    # Update the learning rate when reaching the "step_size" and when it is grater than or equal to 10^-5 (lower bound)
+    if scheduler.get_last_lr()[0] > 10**{-5}:   # scheduler.get_last_lr()[0] gives us the value of the learning rate in the first position
+        scheduler.step()
+
 
     # Keep track of the minimum loss, its epoch and the corresponding model
     aux_loss = loss.item() # auxiliary array with the epoch and the corresponding loss
@@ -175,12 +179,11 @@ for epoch in range(epochs):
 
 # To be sure the net uses the best model found, we load it with "model.load_state_dict()"
 model.load_state_dict(best_model)
-
 print(f"The best model is {best_model}")
 
 
-# ---------- Visualization ----------
 
+# ---------- Visualization ----------
 # Compute the prediction corresponding to the last epoch, without Autograd tracking
 with torch.no_grad(): # all commands in here, will be without attribute "grad_fn"
     y_pred_final = model(x).numpy() # we are converting the tensor to a numpy array just for making the plot
@@ -209,10 +212,11 @@ ax[0].tick_params(axis='x', rotation=45)
 ax[0].set_ylabel('MSE Loss')
 ax[0].set_title('Evolution of Loss (log scale)')
 
-os.makedirs('results', exist_ok=True) # it creates a new folder
-plt.savefig(os.path.join('results', f'LossApprox_Epochs_{args.epochs}_HidNeurons_{args.units}.png'))
+os.makedirs(f'results_InitLR_{args.lr}_StepSize_{args.stepsize}', exist_ok=True) # it creates a new folder
+plt.savefig(os.path.join(f'results_InitLR_{args.lr}_StepSize_{args.stepsize}', f'LossApprox_Epochs_{args.epochs}_HidNeurons_{args.units}.png'))
 plt.clf() # clear fig
 plt.close() # close fig
+
 
 """------------------
 Goal: Visualizations
@@ -230,14 +234,14 @@ weight_in_range = model.Hid1Out.weight.flatten()[pos_in_range]
 # Plot of activated weights
 plt.figure(1)
 plt.hist(weight_in_range.detach().numpy(), bins=50, color='blue', alpha=0.5, label='Weight')
-plt.savefig(os.path.join('results', f'ActiveWeights_Epochs_{args.epochs}_HidNeurons_{args.units}.png'))
+plt.savefig(os.path.join(f'results_InitLR_{args.lr}_StepSize_{args.stepsize}', f'ActiveWeights_InitLR_{args.lr}_Epochs_{args.epochs}_HidNeurons_{args.units}.png'))
 plt.clf()
 plt.close()
 
 # Plot of activated neurons
 plt.figure(2)
 plt.stem(zero_pos[pos_in_range].detach(), weight_in_range.detach(), label='Weight')
-plt.savefig(os.path.join('results', f'ActiveNeurons_Epochs_{args.epochs}_HidNeurons_{args.units}.png'))
+plt.savefig(os.path.join(f'results_InitLR_{args.lr}_StepSize_{args.stepsize}', f'ActiveNeurons_InitLR_{args.lr}_Epochs_{args.epochs}_HidNeurons_{args.units}.png'))
 plt.clf()
 plt.close()
 
