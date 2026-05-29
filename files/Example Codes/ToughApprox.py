@@ -112,8 +112,13 @@ error = nn.MSELoss()
 # Create the optimizer: it changes the "model.parameters()" (== the parameters of the network)
 optimizer = optim.Adam(model.parameters(), lr=learning_rate)
 
-# Change the learning rate dynamically with the Scheduler algorithm: we want to adjust it during the training (Step Decay = StepLR or Exponential Decay = ExponentialLR)
-scheduler = lr_scheduler.StepLR(optimizer, step_size=args.stepsize, gamma= args.gamma)
+# Change the learning rate dynamically with the Scheduler algorithm: we want to adjust it during the training
+# Step Decay
+scheduler = lr_scheduler.StepLR(optimizer, step_size=args.stepsize, gamma= args.gamma) # if we are not using it, uncomment also the lower bound for the learning rate in the for loop
+
+# ReduceLROnPlateau
+scheduler = lr_scheduler.ReduceLROnPlateau(optimizer, mode='min', factor=args.gamma, patience=10000, min_lr=1e-5)
+
 
 # Parameter's initialization
 with torch.no_grad():
@@ -158,9 +163,11 @@ for epoch in range(epochs):
     optimizer.step()
 
     # Update the learning rate when reaching the "step_size" and when it is grater than or equal to 10^-5 (lower bound)
-    if scheduler.get_last_lr()[0] > 10**(-5):   # scheduler.get_last_lr()[0] get the most recent learning rates computed by the scheduler.
-        scheduler.step()
+    # if scheduler.get_last_lr()[0] > 10**(-5):   # scheduler.get_last_lr()[0] get the most recent learning rates computed by the scheduler.
+        # scheduler.step()
 
+    # Update the learning rate with Plateau scheduler
+    scheduler.step(loss.item())
 
     # Keep track of the minimum loss, its epoch and the corresponding model
     aux_loss = loss.item() # auxiliary array with the epoch and the corresponding loss
