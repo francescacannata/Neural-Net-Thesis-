@@ -158,7 +158,7 @@ for epoch in range(epochs):
     optimizer.step()
 
     # Update the learning rate when reaching the "step_size" and when it is grater than or equal to 10^-5 (lower bound)
-    if scheduler.get_last_lr()[0] > 10**(-5):   # scheduler.get_last_lr()[0] gives us the value of the learning rate in the first position
+    if scheduler.get_last_lr()[0] > 10**(-5):   # scheduler.get_last_lr()[0] get the most recent learning rates computed by the scheduler.
         scheduler.step()
 
 
@@ -222,7 +222,7 @@ plt.close() # close fig
 # Create a dataframe with the epochs the loss_history and save it
 loss_history_dataframe = pd.DataFrame({'Epoch': np.arange(args.epochs),
                             'Loss Value': loss_history})
-loss_history_dataframe.to_csv(os.path.join(f'results_InitLR_{args.lr}_StepSize_{args.stepsize}','Loss_History.csv'), index=False)
+loss_history_dataframe.to_csv(os.path.join(f'results_InitLR_{args.lr}_StepSize_{args.stepsize}', f'Loss_History_Epochs_{args.epochs}_HidNeurons_{args.units}.csv'), index=False)
 #np.savetxt(os.path.join(f'results_InitLR_{args.lr}_StepSize_{args.stepsize}','Loss_History.csv'), loss_history, delimiter=',', header='Epoch, Loss Value', comments='')
 
 
