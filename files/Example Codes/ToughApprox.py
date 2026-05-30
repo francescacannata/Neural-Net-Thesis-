@@ -117,7 +117,7 @@ optimizer = optim.Adam(model.parameters(), lr=learning_rate)
 scheduler = lr_scheduler.StepLR(optimizer, step_size=args.stepsize, gamma= args.gamma) # if we are not using it, uncomment also the lower bound for the learning rate in the for loop
 
 # ReduceLROnPlateau
-scheduler = lr_scheduler.ReduceLROnPlateau(optimizer, mode='min', factor=args.gamma, patience=5000, min_lr=1e-5)
+scheduler = lr_scheduler.ReduceLROnPlateau(optimizer, mode='min', factor=args.gamma, patience=500, min_lr=1e-5)
 
 
 # Parameter's initialization
