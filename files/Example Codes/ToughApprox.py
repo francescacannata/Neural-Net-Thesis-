@@ -114,7 +114,7 @@ optimizer = optim.Adam(model.parameters(), lr=learning_rate)
 
 # Change the learning rate dynamically with the Scheduler algorithm: we want to adjust it during the training
 # Step Decay
-scheduler = lr_scheduler.StepLR(optimizer, step_size=args.stepsize, gamma= args.gamma) # if we are not using it, uncomment also the lower bound for the learning rate in the for loop
+#scheduler = lr_scheduler.StepLR(optimizer, step_size=args.stepsize, gamma= args.gamma) # if we are not using it, uncomment also the lower bound for the learning rate in the for loop
 
 # ReduceLROnPlateau
 scheduler = lr_scheduler.ReduceLROnPlateau(optimizer, mode='min', factor=args.gamma, patience=500, min_lr=1e-5)
