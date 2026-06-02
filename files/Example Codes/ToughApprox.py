@@ -210,7 +210,7 @@ for epoch in range(epochs):
 model.load_state_dict(best_model)
 print(f"The best model is {best_model}")
 
-# We want to have the same size for bias and weights using .flatten()
+# We want to have the same size for bias and weights
 bias_InHid1 = best_model["InHid1.bias"].flatten().numpy()
 bias_Hid1Out = best_model["Hid1Out.bias"].flatten().numpy()
 weight_InHid1 = best_model["InHid1.weight"].flatten().numpy()
