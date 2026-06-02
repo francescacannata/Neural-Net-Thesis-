@@ -68,8 +68,8 @@ x = torch.linspace(0,1,N).view(-1, 1)
 
 # Numpy Array -> torch tensor
 omega_tensor =  torch.from_numpy(omega).view(1, -1)
-phi_tensor = torch.from_numpy(phi).view(1, -1)
-c_tensor = torch.from_numpy(c_normalized).view(1, -1)
+phi_tensor = torch.from_numpy(phi).float().view(1, -1)
+c_tensor = torch.from_numpy(c_normalized).float().view(1, -1)
 
 # Create the target function that we want to approximate
 y = torch.sum(c_tensor * torch.sin(2*math.pi*omega_tensor*x + phi_tensor), dim=1)
