@@ -221,7 +221,9 @@ best_model_dataframe = pd.DataFrame({'Bias_Intput_Layer': pd.Series(bias_InHid1)
                             'Bias_Output_Layer': pd.Series(bias_Hid1Out),
                             'Weights_Output_Layer': pd.Series(weight_Hid1Out)})
 
-best_model_dataframe.to_csv(os.path.join(f'results_InitLR_{args.lr}_StepSize_{args.stepsize}', f'BestModel_Epochs_{args.epochs}_HidNeurons_{args.units}.csv'), index=False)
+dir_name = f'results_InitLR_{args.lr}_StepSize_{args.stepsize}'
+os.makedirs(dir_name, exist_ok=True)
+best_model_dataframe.to_csv(os.path.join(dir_name, f'BestModel_Epochs_{args.epochs}_HidNeurons_{args.units}.csv'), index=False)
 
 
 
