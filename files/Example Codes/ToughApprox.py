@@ -39,24 +39,41 @@ torch.manual_seed(args.seed)
 
 # Parameters
 N = 2**10
-s=1                 # power for the weight
-omega1 = 1          # low frequency
-omega2 = 10         # high frequency
-phi1 = np.random.uniform(0, 2*math.pi)  # phase shift
-phi2 = np.random.uniform(0, 2*math.pi)  # phase shift
-w1 = (1+np.abs(omega1)**2)**(s/2)            # weight function
-w2 = (1+np.abs(omega2)**2)**(s/2)            # weight function
-F1 = 0.5                                     # amplitude
-F2 = np.sqrt(1-F1**2)                        # amplitude -> Normalization : F1^2 + F2^2 = 1 (Parseval's theorem)
+n = int(N/2)
+alpha = 1
+beta = 2.1                                              # beta > 2 for having a finite Barron norm
+omega = np.arange(1, n+1)                   # low and high frequencies
+phi = np.random.uniform(0, 2*math.pi, size=n)      # phase shift
+w = 1+np.abs(omega)                                     # weight function
+c = alpha / w**beta                                     # ansatz for the amplitude
+
 
 # Evaluate the Barron norm (p = 1)
-barron_norm = F1*w1 + F2*w2
+barron_norm = np.sum(w * np.abs(c))
+
+# Evaluate the L2 norm
+L2_norm = np.sum(np.square(c))
+
+# Normalize the L2 norm -> \sum_{i = 1}^{n} |c_i| = 1 => \alpha_{norm} = 1 / np.sqrt(np.sum(np.square(1.0 / (w ** beta))))
+alpha_norm = 1 / np.sqrt(np.sum(np.square(1.0 / (w ** beta))))
+c_normalized = alpha_norm / w**beta
+L2_norm_normalized = np.sum(np.square(c_normalized))
+
+# Print the norms
+print(f'The barron norm is {barron_norm}. \n The normalized L2 norm is {L2_norm_normalized}')
+
 
 # Spatial domain
-x = torch.linspace(-1,1,N).view(-1, 1)
+x = torch.linspace(0,1,N).view(-1, 1)
 
-# Create the function we want to approximate
-y = F1 * torch.sin(2*math.pi*omega1*x + phi1) + F2 * torch.sin(2*math.pi*omega2*x + phi2)
+# Numpy Array -> torch tensor
+omega_tensor =  torch.from_numpy(omega).view(1, -1)
+phi_tensor = torch.from_numpy(phi).view(1, -1)
+c_tensor = torch.from_numpy(c_normalized).view(1, -1)
+
+# Create the target function that we want to approximate
+y = torch.sum(c_tensor * torch.sin(2*math.pi*omega_tensor*x + phi_tensor), dim=1)
+
 
 # Visualization
 fig = plt.figure(1)
@@ -66,6 +83,9 @@ plt.xlabel('x')
 plt.ylabel('Target function')
 plt.grid(True)
 plt.close()
+
+
+
 
 
 """----------------------------------
@@ -114,10 +134,10 @@ optimizer = optim.Adam(model.parameters(), lr=learning_rate)
 
 # Change the learning rate dynamically with the Scheduler algorithm: we want to adjust it during the training
 # Step Decay
-#scheduler = lr_scheduler.StepLR(optimizer, step_size=args.stepsize, gamma= args.gamma) # if we are not using it, uncomment also the lower bound for the learning rate in the for loop
+scheduler = lr_scheduler.StepLR(optimizer, step_size=args.stepsize, gamma= args.gamma) # if we are not using it, uncomment also the lower bound for the learning rate in the for loop
 
 # ReduceLROnPlateau
-scheduler = lr_scheduler.ReduceLROnPlateau(optimizer, mode='min', factor=args.gamma, patience=500, min_lr=1e-5)
+#scheduler = lr_scheduler.ReduceLROnPlateau(optimizer, mode='min', factor=args.gamma, patience=500, min_lr=1e-5)
 
 
 # Parameter's initialization
@@ -140,6 +160,7 @@ best_model = {}         # initialization of the dictionary which will contain th
 
 epochs = args.epochs
 loss_history = np.zeros(epochs) # initialization of the array which will contain all errors
+learning_rate_history = np.zeros(epochs) # initialization of the array which will contain all learning rates
 for epoch in range(epochs):
 
     # Reset gradients in order to not accumulate them in the .grad attribute during next epochs
@@ -163,11 +184,11 @@ for epoch in range(epochs):
     optimizer.step()
 
     # Update the learning rate when reaching the "step_size" and when it is grater than or equal to 10^-5 (lower bound)
-    # if scheduler.get_last_lr()[0] > 10**(-5):   # scheduler.get_last_lr()[0] get the most recent learning rates computed by the scheduler.
-        # scheduler.step()
+    if scheduler.get_last_lr()[0] > 10**(-5):   # scheduler.get_last_lr()[0] get the most recent learning rates computed by the scheduler.
+        scheduler.step()
 
     # Update the learning rate with Plateau scheduler
-    scheduler.step(loss.item())
+    scheduler.step()
 
     # Keep track of the minimum loss, its epoch and the corresponding model
     aux_loss = loss.item() # auxiliary array with the epoch and the corresponding loss
@@ -184,11 +205,15 @@ for epoch in range(epochs):
 
     # add the loss to the array
     loss_history[epoch] = loss.item()
+    learning_rate_history[epoch] = scheduler.get_last_lr()[0]
 
 
-# To be sure the net uses the best model found, we load it with "model.load_state_dict()"
+# To be sure the net uses the best model found, we load it with "model.load_state_dict()" and save it
 model.load_state_dict(best_model)
 print(f"The best model is {best_model}")
+best_model_dataframe = pd.DataFrame.from_dict(best_model, orient='columns')
+best_model_dataframe.to_csv(os.path.join(f'results_InitLR_{args.lr}_StepSize_{args.stepsize}', f'BestModel_Epochs_{args.epochs}_HidNeurons_{args.units}.csv'), index=False)
+
 
 
 
@@ -226,11 +251,11 @@ plt.savefig(os.path.join(f'results_InitLR_{args.lr}_StepSize_{args.stepsize}', f
 plt.clf() # clear fig
 plt.close() # close fig
 
-# Create a dataframe with the epochs the loss_history and save it
-loss_history_dataframe = pd.DataFrame({'Epoch': np.arange(args.epochs),
-                            'Loss Value': loss_history})
-loss_history_dataframe.to_csv(os.path.join(f'results_InitLR_{args.lr}_StepSize_{args.stepsize}', f'Loss_History_Epochs_{args.epochs}_HidNeurons_{args.units}.csv'), index=False)
-#np.savetxt(os.path.join(f'results_InitLR_{args.lr}_StepSize_{args.stepsize}','Loss_History.csv'), loss_history, delimiter=',', header='Epoch, Loss Value', comments='')
+# Create a dataframe with the epochs, the loss_history and the learning rate and save it
+history_dataframe = pd.DataFrame({'Epoch': np.arange(args.epochs),
+                            'Loss Value': loss_history,
+                            'Learning Rate': learning_rate_history})
+history_dataframe.to_csv(os.path.join(f'results_InitLR_{args.lr}_StepSize_{args.stepsize}', f'History_Epochs_{args.epochs}_HidNeurons_{args.units}.csv'), index=False)
 
 
 """------------------
