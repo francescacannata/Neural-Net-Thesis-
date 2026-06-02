@@ -210,16 +210,16 @@ for epoch in range(epochs):
 model.load_state_dict(best_model)
 print(f"The best model is {best_model}")
 
-# We want to have the same size for bias and weights
+# We want to have the same size for bias and weights using .flatten()
 bias_InHid1 = best_model["InHid1.bias"].flatten().numpy()
 bias_Hid1Out = best_model["Hid1Out.bias"].flatten().numpy()
 weight_InHid1 = best_model["InHid1.weight"].flatten().numpy()
 weight_Hid1Out = best_model["Hid1Out.weight"].flatten().numpy()
 
-best_model_dataframe = pd.DataFrame({'Bias_Intput_Layer': bias_InHid1,
-                            'Weights_Intput_Layer': weight_InHid1,
-                            'Bias_Output_Layer': bias_Hid1Out,
-                            'Weights_Output_Layer': weight_Hid1Out})
+best_model_dataframe = pd.DataFrame({'Bias_Intput_Layer': pd.Series(bias_InHid1),
+                            'Weights_Intput_Layer': pd.Series(weight_InHid1),
+                            'Bias_Output_Layer': pd.Series(bias_Hid1Out),
+                            'Weights_Output_Layer': pd.Series(weight_Hid1Out)})
 
 best_model_dataframe.to_csv(os.path.join(f'results_InitLR_{args.lr}_StepSize_{args.stepsize}', f'BestModel_Epochs_{args.epochs}_HidNeurons_{args.units}.csv'), index=False)
 
