@@ -221,9 +221,9 @@ best_model_dataframe = pd.DataFrame({'Bias_Intput_Layer': pd.Series(bias_InHid1)
                             'Bias_Output_Layer': pd.Series(bias_Hid1Out),
                             'Weights_Output_Layer': pd.Series(weight_Hid1Out)})
 
-dir_name = f'results_InitLR_{args.lr}_StepSize_{args.stepsize}'
+dir_name = f'results_HN_{args.units}_Epochs_{args.epochs}_InitLR_{args.lr}_StepSize_{args.stepsize}'
 os.makedirs(dir_name, exist_ok=True)
-best_model_dataframe.to_csv(os.path.join(dir_name, f'BestModel_Epochs_{args.epochs}_HidNeurons_{args.units}.csv'), index=False)
+best_model_dataframe.to_csv(os.path.join(dir_name, f'BestModel.csv'), index=False)
 
 
 
@@ -257,8 +257,8 @@ ax[0].tick_params(axis='x', rotation=45)
 ax[0].set_ylabel('MSE Loss')
 ax[0].set_title('Evolution of Loss (log scale)')
 
-os.makedirs(f'results_InitLR_{args.lr}_StepSize_{args.stepsize}', exist_ok=True) # it creates a new folder
-plt.savefig(os.path.join(f'results_InitLR_{args.lr}_StepSize_{args.stepsize}', f'LossApprox_Epochs_{args.epochs}_HidNeurons_{args.units}.png'))
+#os.makedirs(f'results_InitLR_{args.lr}_StepSize_{args.stepsize}', exist_ok=True) # it creates a new folder
+plt.savefig(os.path.join(dir_name, f'LossApprox.png'))
 plt.clf() # clear fig
 plt.close() # close fig
 
@@ -266,7 +266,7 @@ plt.close() # close fig
 history_dataframe = pd.DataFrame({'Epoch': np.arange(args.epochs),
                             'Loss Value': loss_history,
                             'Learning Rate': learning_rate_history})
-history_dataframe.to_csv(os.path.join(f'results_InitLR_{args.lr}_StepSize_{args.stepsize}', f'History_Epochs_{args.epochs}_HidNeurons_{args.units}.csv'), index=False)
+history_dataframe.to_csv(os.path.join(dir_name, f'History.csv'), index=False)
 
 
 """------------------
@@ -285,14 +285,14 @@ weight_in_range = model.Hid1Out.weight.flatten()[pos_in_range]
 # Plot of activated weights
 plt.figure(1)
 plt.hist(weight_in_range.detach().numpy(), bins=50, color='blue', alpha=0.5, label='Weight')
-plt.savefig(os.path.join(f'results_InitLR_{args.lr}_StepSize_{args.stepsize}', f'ActiveWeights_InitLR_{args.lr}_Epochs_{args.epochs}_HidNeurons_{args.units}.png'))
+plt.savefig(os.path.join(dir_name, f'ActiveWeights.png'))
 plt.clf()
 plt.close()
 
 # Plot of activated neurons
 plt.figure(2)
 plt.stem(zero_pos[pos_in_range].detach(), weight_in_range.detach(), label='Weight')
-plt.savefig(os.path.join(f'results_InitLR_{args.lr}_StepSize_{args.stepsize}', f'ActiveNeurons_InitLR_{args.lr}_Epochs_{args.epochs}_HidNeurons_{args.units}.png'))
+plt.savefig(os.path.join(dir_name, f'ActiveNeurons.png'))
 plt.clf()
 plt.close()
 
