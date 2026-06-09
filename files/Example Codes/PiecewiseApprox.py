@@ -109,11 +109,11 @@ for k in m:
   # Target function approximation -> matrix product
   y_pred = np.dot(phi_matrix, t)
 
-  # Save s and t
-  dir_name = f'Breakpoints_k_{k}'
-  os.makedirs(dir_name, exist_ok=True)
-  np.save(os.path.join(dir_name, 's.npy'), s)
-  np.save(os.path.join(dir_name, 't.npy'), t)
+  # # Save s and t
+  # dir_name = f'Breakpoints_k_{k}'
+  # os.makedirs(dir_name, exist_ok=True)
+  # np.save(os.path.join(dir_name, 's.npy'), s)
+  # np.save(os.path.join(dir_name, 't.npy'), t)
 
 
   # Final plot
