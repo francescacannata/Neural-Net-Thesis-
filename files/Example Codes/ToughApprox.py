@@ -14,16 +14,17 @@ import numpy as np
 import pandas as pd
 import math
 import copy
+from functions import *
 
 
 # Read config from command line argument
 parser = argparse.ArgumentParser(description='Training the network with different settings.')
 parser.add_argument('--seed', type=int, default=0, help='Random seed (default: 0).')
 parser.add_argument('--lr', type=float, default=0.01, help='Initial learning rate (default: 0.01).')
-parser.add_argument('--stepsize', type=int, default=100000, help='Step size for the scheduler (default: 100k).')
-parser.add_argument('--gamma', type=float, default=0.1, help='Multiplicative factor for the scheduler (default: 0.1).')
-parser.add_argument('--epochs', type=int, default=100, help='Number of epochs (default: 100).')
-parser.add_argument('--units', type=int, default=10, help='Numbers of hidden neurons (default: 10).')
+parser.add_argument('--stepsize', type=int, default=4000, help='Step size for the scheduler (default: 100k).')
+parser.add_argument('--gamma', type=float, default=0.35, help='Multiplicative factor for the scheduler (default: 0.1).')
+parser.add_argument('--epochs', type=int, default=20000, help='Number of epochs (default: 100).')
+parser.add_argument('--units', type=int, default=300, help='Numbers of hidden neurons (default: 10).')
 
 args = parser.parse_args() # Convert argument strings to objects and assign them as attributes of the namespace
 print(f'This is the network\'s setting. \n Seed = {args.seed} \n Initial learning rate = {args.lr} \n Number of epochs = {args.epochs} \n Number of hidden neurons = {args.units}')
@@ -66,6 +67,7 @@ print(f'The barron norm is {barron_norm}. \n The normalized L2 norm is {L2_norm_
 # Spatial domain
 x = torch.linspace(0,1,N).view(-1, 1)
 
+'''================ Barron Function ==============
 # Numpy Array -> torch tensor
 omega_tensor =  torch.from_numpy(omega).view(1, -1)
 phi_tensor = torch.from_numpy(phi).float().view(1, -1)
@@ -73,7 +75,6 @@ c_tensor = torch.from_numpy(c_normalized).float().view(1, -1)
 
 # Create the target function that we want to approximate
 y = torch.sum(c_tensor * torch.sin(2*math.pi*omega_tensor*x + phi_tensor), dim=1)
-
 
 # Visualization
 fig = plt.figure(1)
@@ -83,6 +84,21 @@ plt.xlabel('x')
 plt.ylabel('Target function')
 plt.grid(True)
 plt.close()
+=================================================='''
+
+# Target piecewise function
+y_array = piecewise_func(x)
+y = torch.tensor(y_array, dtype=torch.float32)
+
+# Visualization
+fig = plt.figure(1)
+plt.plot(x, y_array, color='red', linewidth=2)
+plt.title(f'Piecewise function')
+plt.xlabel('x')
+plt.ylabel('y')
+plt.grid(True)
+
+#plt.show()
 
 
 
@@ -247,7 +263,7 @@ ax[1].plot(x, y_pred_final, label='Network Approximation', color='red')
 # Plots attributes
 ax[1].set_xlabel('Input data')
 ax[1].set_ylabel('Target function')
-ax[1].set_title('Target Barron Function VS Network Approximation')
+ax[1].set_title('Target Piecewise Function VS Network Approximation')
 ax[1].legend(loc='best')
 ax[1].grid(True)
 
@@ -259,8 +275,9 @@ ax[0].set_title('Evolution of Loss (log scale)')
 
 #os.makedirs(f'results_InitLR_{args.lr}_StepSize_{args.stepsize}', exist_ok=True) # it creates a new folder
 plt.savefig(os.path.join(dir_name, f'LossApprox.png'))
-plt.clf() # clear fig
-plt.close() # close fig
+# plt.clf() # clear fig
+# plt.close() # close fig
+plt.show()
 
 # Create a dataframe with the epochs, the loss_history and the learning rate and save it
 history_dataframe = pd.DataFrame({'Epoch': np.arange(args.epochs),
@@ -286,15 +303,17 @@ weight_in_range = model.Hid1Out.weight.flatten()[pos_in_range]
 plt.figure(1)
 plt.hist(weight_in_range.detach().numpy(), bins=50, color='blue', alpha=0.5, label='Weight')
 plt.savefig(os.path.join(dir_name, f'ActiveWeights.png'))
-plt.clf()
-plt.close()
+# plt.clf()
+# plt.close()
+plt.show()
 
 # Plot of activated neurons
 plt.figure(2)
 plt.stem(zero_pos[pos_in_range].detach(), weight_in_range.detach(), label='Weight')
 plt.savefig(os.path.join(dir_name, f'ActiveNeurons.png'))
-plt.clf()
-plt.close()
+# plt.clf()
+# plt.close()
+plt.show()
 
 # Print how many neurons are activated between -1 and 1
 print(f'{torch.sum(pos_in_range)} are inside the range')
