@@ -62,7 +62,7 @@ print(f'The barron norm is {barron_norm}. \n The normalized L2 norm is {L2_norm_
 
 # Define the spatial domain and call the barron_func
 x = np.linspace(0,1,N).reshape(-1, 1)
-y = barron_func(c, omega, x, phi)
+y = piecewise_func(x)
 
 
 # Barron function visualization
@@ -80,7 +80,7 @@ plt.show()
  Goal: Piecewise linear interpolation
 -------------------------------------------"""
 # Number of intervals m << N
-m = np.linspace(1, 100, 100, dtype=int)
+m = np.arange(101)
 
 # Because x is a vector N x 1
 x_flat = np.array(x).flatten()
@@ -90,11 +90,11 @@ error_list = []
 
 # Iterate the hat function on all i to generate columns of the matrix phi
 for k in m:
-  s = np.zeros(k)                   # Initialization x-values of the breakpoints for each m value
-  phi = np.zeros((len(x_flat), k))  # Initialization matrix N x k with the values of the hat functions over x
+  s = np.zeros(k+1)                   # Initialization x-values of the breakpoints for each m value
+  phi = np.zeros((len(x_flat), k+1))  # Initialization matrix N x k with the values of the hat functions over x
 
   # Define the values of s for each m value and generate the matrix's columns
-  for j in range(k):
+  for j in range(k+1):
       s[j] = j/k
       phi[:, j] = hat_function(x_flat, j, k)
 
@@ -109,19 +109,27 @@ for k in m:
   # Target function approximation -> matrix product
   y_pred = np.dot(phi_matrix, t)
 
+  # Save s and t
+  dir_name = f'Breakpoints_k_{k}'
+  os.makedirs(dir_name, exist_ok=True)
+  np.save(os.path.join(dir_name, 's.npy'), s)
+  np.save(os.path.join(dir_name, 't.npy'), t)
+
+
   # Final plot
-  # if k == 1 or k % 10 == 0:
-  #     plt.plot(x, y, label='Target function', color='green', linewidth=2)
-  #     plt.plot(x, y_pred, label='Piecewise Approximation', color='red')
-  #     #plt.plot(x, phi_matrix[:,0], label='Hat function', color='blue')
-  #     plt.title(f'Target Function VS Piecewise Approximation (intervals = {k})')
-  #     plt.xlabel('Input data')
-  #     plt.ylabel('Target function')
-  #     plt.legend(loc='best')
-  #     plt.grid(True)
-  #     plt.show()
+  if k == 14:
+      plt.plot(x, y, label='Target function', color='green', linewidth=2)
+      plt.plot(x, y_pred, label='Piecewise Approximation', color='red')
+      plt.plot(x, phi_matrix[:,-1], label='Hat function', color='blue')
+      plt.title(f'Target Function VS Piecewise Approximation (intervals = {k})')
+      plt.xlabel('Input data')
+      plt.ylabel('Target function')
+      plt.legend(loc='best')
+      plt.grid(True)
+      plt.show()
 
 print(error_list)
+
 
 # We want to know how the error evolves in terms of the intervals
 plt.figure(2)
