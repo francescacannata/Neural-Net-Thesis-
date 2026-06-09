@@ -21,10 +21,10 @@ from functions import *
 parser = argparse.ArgumentParser(description='Training the network with different settings.')
 parser.add_argument('--seed', type=int, default=0, help='Random seed (default: 0).')
 parser.add_argument('--lr', type=float, default=0.01, help='Initial learning rate (default: 0.01).')
-parser.add_argument('--stepsize', type=int, default=4000, help='Step size for the scheduler (default: 100k).')
-parser.add_argument('--gamma', type=float, default=0.35, help='Multiplicative factor for the scheduler (default: 0.1).')
-parser.add_argument('--epochs', type=int, default=20000, help='Number of epochs (default: 100).')
-parser.add_argument('--units', type=int, default=300, help='Numbers of hidden neurons (default: 10).')
+parser.add_argument('--stepsize', type=int, default=1500, help='Step size for the scheduler (default: 100k).')
+parser.add_argument('--gamma', type=float, default=0.3, help='Multiplicative factor for the scheduler (default: 0.1).')
+parser.add_argument('--epochs', type=int, default=7000, help='Number of epochs (default: 100).')
+parser.add_argument('--units', type=int, default=2, help='Numbers of hidden neurons (default: 10).')
 
 args = parser.parse_args() # Convert argument strings to objects and assign them as attributes of the namespace
 print(f'This is the network\'s setting. \n Seed = {args.seed} \n Initial learning rate = {args.lr} \n Number of epochs = {args.epochs} \n Number of hidden neurons = {args.units}')
@@ -40,6 +40,8 @@ torch.manual_seed(args.seed)
 
 # Parameters
 N = 2**10
+
+'''================ Barron Function ==============
 n = int(N/2)
 alpha = 1
 beta = 2.1                                              # beta > 2 for having a finite Barron norm
@@ -62,10 +64,11 @@ L2_norm_normalized = np.sum(np.square(c_normalized))
 
 # Print the norms
 print(f'The barron norm is {barron_norm}. \n The normalized L2 norm is {L2_norm_normalized}')
-
+========================================================='''
 
 # Spatial domain
 x = torch.linspace(0,1,N).view(-1, 1)
+
 
 '''================ Barron Function ==============
 # Numpy Array -> torch tensor
@@ -87,7 +90,7 @@ plt.close()
 =================================================='''
 
 # Target piecewise function
-y_array = piecewise_func(x)
+y_array = piecewise_func(x)                     # one neuron is enough?
 y = torch.tensor(y_array, dtype=torch.float32)
 
 # Visualization
@@ -98,7 +101,7 @@ plt.xlabel('x')
 plt.ylabel('y')
 plt.grid(True)
 
-#plt.show()
+plt.show()
 
 
 
