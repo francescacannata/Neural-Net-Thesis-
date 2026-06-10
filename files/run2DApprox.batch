@@ -1,0 +1,31 @@
+#!/bin/bash
+#SBATCH --job-name=ModulationNetwork                      # Job name
+#SBATCH --output=logs/output_Modulation_%A_%a.txt         # Output file (%j = job ID)
+#SBATCH --error=logs/error_Modulation_%A_%a.txt           # Error file
+#SBATCH --time=72:00:00                                   # Max run time (HH:MM:SS)
+#SBATCH --partition=gpu-a100                              # Or "cpu" or your specific partition name
+#SBATCH --gres=gpu:0                                      # gpu:X = X is the number of requested GPU cards, max. 2 at gpu-v100s or gpu-a100
+#SBATCH --mem=16G                                         # RAM
+#SBATCH --cpus-per-task=1                                 # Number of CPU cores
+#SBATCH --ntasks=1                                        # Number of tasks (usually 1)
+##SBATCH --array=0-0                                       # uncomment if you want a job array
+
+
+
+SEED=$SLURM_ARRAY_TASK_ID
+echo "starting script with seed: $SEED"
+
+#units=(100 1000 10000)
+#UNITS=${units[$SLURM_ARRAY_TASK_ID]}
+#echo "Running with seed $UNITS"
+
+# Run the script
+export PYTHONUNBUFFERED=1
+srun uv run ~/Repositories/ProjectMasterThesis/Neural-Net-Thesis-/files/Example\ Codes/2DApprox.py --seed=$SEED --size=${1} --breakpoints=${2}
+
+
+###########################################################
+# TO RUN THE BATCH USE IN THE TERMINAL THE FOLLOWING CODE #
+###########################################################
+
+#$ sbatch run.batch
