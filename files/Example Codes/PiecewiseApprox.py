@@ -62,7 +62,7 @@ print(f'The barron norm is {barron_norm}. \n The normalized L2 norm is {L2_norm_
 
 # Define the spatial domain and call the barron_func
 x = np.linspace(0,1,N).reshape(-1, 1)
-y = piecewise_func(x)
+y = NN_func(x, width=4)
 
 
 # Barron function visualization
@@ -80,13 +80,14 @@ plt.show()
  Goal: Piecewise linear interpolation
 -------------------------------------------"""
 # Number of intervals m << N
-m = np.arange(101)
+m = np.arange(1, 100)
 
 # Because x is a vector N x 1
 x_flat = np.array(x).flatten()
 
 # Initialization error list
 error_list = []
+error_th = []
 
 # Iterate the hat function on all i to generate columns of the matrix phi
 for k in m:
@@ -105,6 +106,7 @@ for k in m:
   t = ls_result[0]
   error = ls_result[1]
   error_list.append(float(error[0]))
+  error_th.append(float(1/k**2.5)) # 1/k**2
 
   # Target function approximation -> matrix product
   y_pred = np.dot(phi_matrix, t)
@@ -118,6 +120,7 @@ for k in m:
 
   # Final plot
   if k == 14:
+      plt.figure(2)
       plt.plot(x, y, label='Target function', color='green', linewidth=2)
       plt.plot(x, y_pred, label='Piecewise Approximation', color='red')
       plt.plot(x, phi_matrix[:,-1], label='Hat function', color='blue')
@@ -128,25 +131,23 @@ for k in m:
       plt.grid(True)
       plt.show()
 
-print(error_list)
+
+# TODO: evaluate the constant
+c_err = error_list[-1] / error_th[-1]
+error_th = c_err * np.array(error_th)
+print(error_th)
 
 
-# We want to know how the error evolves in terms of the intervals
+# We want to know how the theoretical and the experimental error evolves in terms of the intervals
+
 plt.figure(2)
 plt.figure(figsize=(8, 5))
-plt.loglog(m, error_list, color='blue')
-plt.title('Error vs Intervals')
+plt.loglog(m, error_list, color='blue', label='Experimental Error')
+plt.loglog(m, error_th, color='red', label='Theoretical Error')
+plt.title('Errors vs Intervals')
 plt.xlabel('Intervals')
 plt.ylabel('Error')
+plt.legend(loc='best')
 plt.grid(True)
-plt.show()
-
-
-# Crea la funzione target con np.interp
-pw_function = np.interp(x, s, t)
-
-# Visualization
-fig = plt.figure(3)
-plt.plot(x, pw_function, color='red', linewidth=2)
 plt.show()
 
