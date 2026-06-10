@@ -6,6 +6,9 @@
 ----------------------------------------------------------------------------"""
 import numpy as np
 import math
+import torch.nn as nn
+import torch
+
 
 # Barron function
 def barron_func(c, omega, x, phi):
@@ -22,27 +25,30 @@ def piecewise_func(x, seed=0):
     return pw_func
 
 
-# Define the hat functions considering the boundary conditions
+# 2D target function
+def NN_func(x, seed=0, d=1, width=1):
+    torch.manual_seed(seed)
+    model = nn.Sequential()
+    model.append(nn.Linear(d,width))
+    model.append(nn.ReLU())
+    model.append(nn.Linear(width, 1))
+    nn.init.uniform_(model[0].bias, a=0, b=2)
+    nn.init.uniform_(model[0].weight, a=-2, b=-1)
+    nn.init.uniform_(model[2].bias, a=-1, b=1)
+    nn.init.uniform_(model[2].weight, a=-1, b=1)
+    model.eval()
+    print(f'input weights: {model[0].weight}')
+    print(f'input bias: {model[0].bias}')
+    print(f'output weights: {model[2].weight}')
+    print(f'output bias: {model[2].bias}')
+    return model(torch.from_numpy(x).float()).detach().numpy()
+
+
+# One dimensional hat function with boundary conditions
 def hat_function(x, J, M):
     return np.maximum(0, 1 - np.abs(M * x - J))
-    # we need to define the boundary conditions
-    #if J == 0:
-        # if x <= 1/M:              # if x[i] is in the left side (i.e. between 0 and s_1 = 1/m), we want just a downward segment \
-        #     return 1 - M*x
-        # elif x >= 1 - 1/M:        # if x[i] is in the right side (i.e. between s_{m-1} and s_m = 1), we want just a upwards segment /
-        #     return 1 + M*(x-1)
-        # else:                        # if x[i] is between s_1 = 1/m and s_{m-1} then the hat function is zero
-        #     return 0
-        #return np.maximum(0,np.maximum(1 - M*x,1 + M*(x-1)))
-    # elif 0 < J < M - 1:      # inner points (s_1, ..., s_{m-1})
-    #     if S[J-1] < x <= S[J+1]:
-    #         return 1 - np.abs(M*x - J)
-    #     else:
-    #         return 0
-    # elif J == M - 1:  # last point
-    #     if S[j - 1] < x <= 1:       # the end point of the domain is 1
-    #         return 1 - np.abs(M * x - J)
-    #     else:
-    #         return 0
-    #else:
-        #return np.maximum(0, 1 - np.abs(M * x - J))
+
+
+# Two dimensional hat function
+def twodim_hat_function(x, J, M):
+    return np.prod(np.maximum(0, 1 - np.abs(M * x - J)), axis=1)
