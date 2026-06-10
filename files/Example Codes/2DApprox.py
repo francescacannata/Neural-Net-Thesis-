@@ -27,7 +27,7 @@ parser.add_argument('--seed', type=int, default=0, help='Random seed (default: 0
 #parser.add_argument('--epochs', type=int, default=100, help='Number of epochs (default: 100).')
 #arser.add_argument('--units', type=int, default=10, help='Numbers of hidden neurons (default: 10).')
 parser.add_argument('--size', type=int, default=2**7, help='Size of input data (default: 2**7).')
-parser.add_argument('--breakpoints', type=int, default=10, help='SNumber of breakpoints (default: 10).')
+parser.add_argument('--bp', type=int, default=10, help='SNumber of breakpoints (default: 10).')
 
 args = parser.parse_args() # Convert argument strings to objects and assign them as attributes of the namespace
 #print(f'This is the network\'s setting. \n Seed = {args.seed} \n Number of hidden neurons = {args.units}')
