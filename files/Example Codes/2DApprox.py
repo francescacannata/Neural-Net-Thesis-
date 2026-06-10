@@ -20,7 +20,7 @@ from functions import *
 
 # Read config from command line argument
 parser = argparse.ArgumentParser(description='Training the network with different settings.')
-#parser.add_argument('--seed', type=int, default=0, help='Random seed (default: 0).')
+parser.add_argument('--seed', type=int, default=0, help='Random seed (default: 0).')
 #parser.add_argument('--lr', type=float, default=0.01, help='Initial learning rate (default: 0.01).')
 #parser.add_argument('--stepsize', type=int, default=100000, help='Step size for the scheduler (default: 100k).')
 #parser.add_argument('--gamma', type=float, default=0.1, help='Multiplicative factor for the scheduler (default: 0.1).')
