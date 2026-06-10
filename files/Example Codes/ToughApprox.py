@@ -90,7 +90,7 @@ plt.close()
 =================================================='''
 
 # Target piecewise function
-y_array = piecewise_func(x)                     # one neuron is enough?
+y_array = piecewise_func(x)
 y = torch.tensor(y_array, dtype=torch.float32)
 
 # Visualization
