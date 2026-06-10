@@ -62,7 +62,7 @@ print(f'The barron norm is {barron_norm}. \n The normalized L2 norm is {L2_norm_
 
 # Define the spatial domain and call the barron_func
 x = np.linspace(0,1,N).reshape(-1, 1)
-y = NN_func(x, width=4)
+y = NN_func(x, width=4) # y = piecewise_func(x)
 
 
 # Barron function visualization
