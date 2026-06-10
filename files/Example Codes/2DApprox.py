@@ -16,7 +16,7 @@ import pandas as pd
 import math
 import copy
 from functions import *
-import nn_approx
+# import nn_approx
 
 # Read config from command line argument
 parser = argparse.ArgumentParser(description='Training the network with different settings.')
