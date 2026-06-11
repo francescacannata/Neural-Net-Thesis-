@@ -8,8 +8,7 @@
 #SBATCH --mem=16G                                         # RAM
 #SBATCH --cpus-per-task=1                                 # Number of CPU cores
 #SBATCH --ntasks=1                                        # Number of tasks (usually 1)
-##SBATCH --array=0-0                                       # uncomment if you want a job array
-
+##SBATCH --array=0-0                                      # uncomment if you want a job array
 
 
 SEED=$SLURM_ARRAY_TASK_ID
