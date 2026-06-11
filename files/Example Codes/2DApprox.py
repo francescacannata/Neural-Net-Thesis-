@@ -22,12 +22,12 @@ from nn_approx import *
 parser = argparse.ArgumentParser(description='Training the network with different settings.')
 parser.add_argument('--seed', type=int, default=0, help='Random seed (default: 0).')
 #parser.add_argument('--lr', type=float, default=0.01, help='Initial learning rate (default: 0.01).')
-#parser.add_argument('--stepsize', type=int, default=100000, help='Step size for the scheduler (default: 100k).')
+parser.add_argument('--stepsize', type=int, default=1000, help='Step size for the scheduler (default: 100k).')
 #parser.add_argument('--gamma', type=float, default=0.1, help='Multiplicative factor for the scheduler (default: 0.1).')
-#parser.add_argument('--epochs', type=int, default=100, help='Number of epochs (default: 100).')
+parser.add_argument('--epochs', type=int, default=5000, help='Number of epochs (default: 100).')
 parser.add_argument('--units', type=int, default=10, help='Numbers of hidden neurons (default: 10).')
 parser.add_argument('--size', type=int, default=2**7, help='Size of input data (default: 2**7).')
-parser.add_argument('--bp', type=int, default=10, help='SNumber of breakpoints (default: 10).')
+parser.add_argument('--bp', type=int, default=100, help='SNumber of breakpoints (default: 10).')
 
 args = parser.parse_args() # Convert argument strings to objects and assign them as attributes of the namespace
 #print(f'This is the network\'s setting. \n Seed = {args.seed} \n Number of hidden neurons = {args.units}')
@@ -70,8 +70,7 @@ x2 = np.linspace(-1,1,N).reshape(-1, 1)
 X1, X2 = np.meshgrid(x1, x2)
 X = np.array([X1.ravel(), X2.ravel()]).T        # N**2 x 2
 y = NN_func(X, width=4, d=2)
-print('target function ready')
-
+print('Target function ready')
 
 
 # Target function visualization
@@ -105,7 +104,7 @@ error_th = []
 # Iterate the hat function on all i to generate columns of the matrix phi
 for k in m:
     # s = np.zeros(k+1)                         # Initialization x-values of the breakpoints for each m value
-    phi = np.zeros((N**2, 2*(k+1), 2*(k+1)))  # Initialization matrix N x k with the values of the hat functions over x
+    phi = np.zeros((N**2, 2*(k+1), 2*(k+1)))    # Initialization matrix N x k with the values of the hat functions over x
 
     # Define the values of s for each m value and generate the matrix's columns
     for j1 in range(-k, k):
@@ -170,6 +169,9 @@ plt.savefig(os.path.join(dir_name, f'ErrorVsIntervals.png'))
 #plt.close()
 plt.show()
 
+"""----------------------------------------
+ Goal: Neural Network approximation
+-------------------------------------------"""
 
 # Target function approximation with Neural network
 X_tensor = torch.tensor(X, dtype=torch.float32)
@@ -180,7 +182,7 @@ min_loss_th_list = []
 
 
 for neurons in range(1, args.units+1):
-    y_pred_NN, min_loss = approx(X_tensor, y_tensor, neurons, 0.01, 1000, 0.3, 5000)
+    y_pred_NN, min_loss = approx(X_tensor, y_tensor, neurons, 0.01, args.stepsize, 0.3, args.epochs)
     total_neurons.append(neurons)
     min_loss_list.append(float(min_loss))
     min_loss_th_list.append(float(1/neurons))
