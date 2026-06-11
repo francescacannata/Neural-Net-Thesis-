@@ -21,7 +21,7 @@ echo "starting script with seed: $SEED"
 
 # Run the script
 export PYTHONUNBUFFERED=1
-srun uv run ~/Repositories/ProjectMasterThesis/Neural-Net-Thesis-/files/Example\ Codes/2DApprox.py --seed=$SEED --size=${1} --bp=${2}
+srun uv run ~/Repositories/ProjectMasterThesis/Neural-Net-Thesis-/files/Example\ Codes/2DApprox.py --seed=$SEED --units=${1} --size=${2} --bp=${3}
 
 
 ###########################################################
