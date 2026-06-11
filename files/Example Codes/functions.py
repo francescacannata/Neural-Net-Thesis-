@@ -32,10 +32,18 @@ def NN_func(x, seed=0, d=1, width=1):
     model.append(nn.Linear(d,width))
     model.append(nn.ReLU())
     model.append(nn.Linear(width, 1))
+
+    # Parameter's initialization
     nn.init.uniform_(model[0].bias, a=0, b=2)
     nn.init.uniform_(model[0].weight, a=-2, b=-1)
     nn.init.uniform_(model[2].bias, a=-1, b=1)
     nn.init.uniform_(model[2].weight, a=-1, b=1)
+
+    with torch.no_grad():
+        p = torch.arange(1, width + 1) # Output weights: they have to sum up to 1 if we want the network in the variation space. Decay: 2^-p -> 1 for p -> \infty
+        decay = 2.0 ** (-p)
+        model[2].weight.copy_(decay.view(1, -1))
+
     model.eval()
     print(f'input weights: {model[0].weight}')
     print(f'input bias: {model[0].bias}')
