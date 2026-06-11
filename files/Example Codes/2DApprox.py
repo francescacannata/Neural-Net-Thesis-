@@ -86,9 +86,9 @@ plt.ylabel('Target function')
 plt.grid(True)
 
 plt.savefig(os.path.join(dir_name, f'Target Function.png'))
-#plt.clf()
-#plt.close()
-plt.show()
+plt.clf()
+plt.close()
+#plt.show()
 
 
 """----------------------------------------
@@ -145,9 +145,9 @@ for k in m:
       plt.legend(loc='best')
       plt.grid(True)
       plt.savefig(os.path.join(dir_name, f'TargetApproxPW.png'))
-      #plt.clf()
-      #plt.close()
-      plt.show()
+      plt.clf()
+      plt.close()
+      #plt.show()
 
 # Theoretical piecewise error
 c_err = error_list[-1] / error_th[-1]
@@ -165,9 +165,9 @@ plt.ylabel('Error')
 plt.legend(loc='best')
 plt.grid(True)
 plt.savefig(os.path.join(dir_name, f'ErrorVsIntervals.png'))
-#plt.clf()
-#plt.close()
-plt.show()
+plt.clf()
+plt.close()
+#plt.show()
 
 """----------------------------------------
  Goal: Neural Network approximation
@@ -198,9 +198,9 @@ for neurons in range(1, args.units+1):
         plt.legend(loc='best')
         plt.grid(True)
         plt.savefig(os.path.join(dir_name, f'TargetApproxNN.png'))
-        #plt.clf()
-        #plt.close()
-        plt.show()
+        plt.clf()
+        plt.close()
+        #plt.show()
 
 # We want to know how the theoretical and the experimental error evolves in terms of the number of hidden neurons (NN Approx)
 plt.figure(3)
@@ -213,9 +213,9 @@ plt.ylabel('Error')
 plt.legend(loc='best')
 plt.grid(True)
 plt.savefig(os.path.join(dir_name, f'ErrorVsNeurons.png'))
-#plt.clf()
-#plt.close()
-plt.show()
+plt.clf()
+plt.close()
+#plt.show()
 
 
 
