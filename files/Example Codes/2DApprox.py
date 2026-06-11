@@ -16,7 +16,7 @@ import pandas as pd
 import math
 import copy
 from functions import *
-# import nn_approx
+from nn_approx import *
 
 # Read config from command line argument
 parser = argparse.ArgumentParser(description='Training the network with different settings.')
@@ -25,7 +25,7 @@ parser.add_argument('--seed', type=int, default=0, help='Random seed (default: 0
 #parser.add_argument('--stepsize', type=int, default=100000, help='Step size for the scheduler (default: 100k).')
 #parser.add_argument('--gamma', type=float, default=0.1, help='Multiplicative factor for the scheduler (default: 0.1).')
 #parser.add_argument('--epochs', type=int, default=100, help='Number of epochs (default: 100).')
-#arser.add_argument('--units', type=int, default=10, help='Numbers of hidden neurons (default: 10).')
+parser.add_argument('--units', type=int, default=10, help='Numbers of hidden neurons (default: 10).')
 parser.add_argument('--size', type=int, default=2**7, help='Size of input data (default: 2**7).')
 parser.add_argument('--bp', type=int, default=10, help='SNumber of breakpoints (default: 10).')
 
@@ -64,17 +64,17 @@ L2_norm_normalized = np.sum(np.square(c_normalized))
 # Print the norms
 print(f'The barron norm is {barron_norm}. \n The normalized L2 norm is {L2_norm_normalized}')
 
-# Define the spatial domain and call the barron_func
-x1 = np.linspace(0,1,N).reshape(-1, 1)
-x2 = np.linspace(0,1,N).reshape(-1, 1)
+# Define the spatial domain and call the target function NN_func
+x1 = np.linspace(-1,1,N).reshape(-1, 1)
+x2 = np.linspace(-1,1,N).reshape(-1, 1)
 X1, X2 = np.meshgrid(x1, x2)
-X = np.array([X1.ravel(), X2.ravel()]).T
+X = np.array([X1.ravel(), X2.ravel()]).T        # N**2 x 2
 y = NN_func(X, width=4, d=2)
 print('target function ready')
 
 
 
-# Barron function visualization
+# Target function visualization
 dir_name = f'results_N_{args.size}_bp_{args.bp}'
 os.makedirs(dir_name, exist_ok=True)
 
@@ -85,11 +85,11 @@ plt.title(f'Function with Barron norm {barron_norm}')
 plt.xlabel('x')
 plt.ylabel('Target function')
 plt.grid(True)
-#plt.show()
 
 plt.savefig(os.path.join(dir_name, f'Target Function.png'))
-plt.clf()
-plt.close()
+#plt.clf()
+#plt.close()
+plt.show()
 
 
 """----------------------------------------
@@ -98,66 +98,64 @@ plt.close()
 # Number of intervals m << N
 m = np.arange(1, args.bp)
 
-# Because x is a vector N**2 x 2
-x_flat = X
-
 # Initialization error list
 error_list = []
 error_th = []
 
 # Iterate the hat function on all i to generate columns of the matrix phi
 for k in m:
-    #y_pred = nn_approx.approx(x_flat, y)
-    s = np.zeros(k+1)                   # Initialization x-values of the breakpoints for each m value
-    phi = np.zeros((N**2, k+1, k+1))  # Initialization matrix N x k with the values of the hat functions over x
+    # s = np.zeros(k+1)                         # Initialization x-values of the breakpoints for each m value
+    phi = np.zeros((N**2, 2*(k+1), 2*(k+1)))  # Initialization matrix N x k with the values of the hat functions over x
 
     # Define the values of s for each m value and generate the matrix's columns
-    for j1 in range(k+1):
-      for j2 in range(k+1):
-          phi[:, j1, j2] = twodim_hat_function(x_flat, np.array([j1,j2]).reshape((1,2)), k)
+    for j1 in range(-k, k):
+      for j2 in range(-k, k):
+          phi[:, j1+k, j2+k] = twodim_hat_function(X, np.array([j1,j2]).reshape((1,2)), k) # j_i + k because negative indices are at the end of the array. We are doing a translation from [-k, k] to [0, 2k]
           if j1 == 0 and j2 == 0 and k==8:
             print(f'phi = {phi[:, j1, j2].reshape((N, N))}')
 
-    phi_matrix = phi.reshape((N**2, (k+1)**2))
+    phi_matrix = phi.reshape((N**2, (2*(k+1))**2))
 
     # Solve the least square error and find the y-values of the breakpoints
     print(phi_matrix.shape)
     ls_result = np.linalg.lstsq(phi_matrix, y)
     t = ls_result[0]
-    error = ls_result[1]
-    print(f'The error is {error}')
-    error_list.append(float(error[0]))
-    error_th.append(float(1/k**2.5))
+    #error = ls_result[1]
+    #print(f'The error is {error}')
+    #error_list.append(float(error[0]))
+    #error_th.append(float(1/k**2.5))
 
-    # Target function approximation -> matrix product
-    y_pred = np.dot(phi_matrix, t)
+    # Target function approximation with piecewise -> matrix product
+    y_pred_PW = np.dot(phi_matrix, t)
+    error = np.sum((y - y_pred_PW)**2)
+    error_list.append(float(error))
+    error_th.append(float(1 / k ** 2.5))
 
     # Final plot
     if k == 8:
       ax = plt.figure(2).add_subplot(111, projection='3d')
       # ax.contour(X1, X2, y.reshape((N,N)))
-      #ax.plot_wireframe(X1, X2, y.reshape((N, N)))
-      #ax.plot_wireframe(X1, X2, y_pred.reshape((N, N)))
-      ax.plot_surface(X1, X2, phi[:,1,1].reshape((N, N)))
-      ax.plot_surface(X1, X2, phi[:,2,2].reshape((N, N)))
-      plt.title(f'Target Function VS Piecewise Approximation (intervals = {k})')
+      ax.plot_wireframe(X1, X2, y.reshape((N, N)), color='orange')
+      ax.plot_wireframe(X1, X2, y_pred_PW.reshape((N, N)), color='green')
+      #ax.plot_surface(X1, X2, phi[:,1,1].reshape((N, N)))
+      #ax.plot_surface(X1, X2, phi[:,2,2].reshape((N, N)))
+      #plt.title(f'Hat functions (intervals = {k})')
+      plt.title(f'Target Function VS Piecewise Approximation (interval = {k})')
       plt.xlabel('Input data')
       plt.ylabel('Target function')
       plt.legend(loc='best')
       plt.grid(True)
-      plt.savefig(os.path.join(dir_name, f'TargetApprox.png'))
-      plt.clf()
-      plt.close()
-      #plt.show()
+      plt.savefig(os.path.join(dir_name, f'TargetApproxPW.png'))
+      #plt.clf()
+      #plt.close()
+      plt.show()
 
-
+# Theoretical piecewise error
 c_err = error_list[-1] / error_th[-1]
 error_th = c_err * np.array(error_th)
 print(error_th)
 
-
-# We want to know how the theoretical and the experimental error evolves in terms of the intervals
-
+# We want to know how the theoretical and the experimental error evolves in terms of the intervals (Piecewise Approx)
 plt.figure(2)
 plt.figure(figsize=(8, 5))
 plt.loglog(m, error_list, color='blue', label='Experimental Error')
@@ -168,7 +166,54 @@ plt.ylabel('Error')
 plt.legend(loc='best')
 plt.grid(True)
 plt.savefig(os.path.join(dir_name, f'ErrorVsIntervals.png'))
-plt.clf()
-plt.close()
-#plt.show()
+#plt.clf()
+#plt.close()
+plt.show()
+
+
+# Target function approximation with Neural network
+X_tensor = torch.tensor(X, dtype=torch.float32)
+y_tensor = torch.tensor(y, dtype=torch.float32)
+total_neurons = []
+min_loss_list = []
+min_loss_th_list = []
+
+
+for neurons in range(1, args.units+1):
+    y_pred_NN, min_loss = approx(X_tensor, y_tensor, neurons, 0.01, 1000, 0.3, 5000)
+    total_neurons.append(neurons)
+    min_loss_list.append(float(min_loss))
+    min_loss_th_list.append(float(1/neurons))
+
+    # Neural Network approximation plot
+    if neurons == 10:
+        ax = plt.figure(3).add_subplot(111, projection='3d')
+        ax.plot_wireframe(X1, X2, y.reshape((N, N)), color='orange')
+        ax.plot_wireframe(X1, X2, y_pred_NN.reshape((N, N)), color='green')
+        plt.title(f'Target Function VS Neural network approximation (Hidden Neurons = {neurons})')
+        plt.xlabel('Input data')
+        plt.ylabel('Target function')
+        plt.legend(loc='best')
+        plt.grid(True)
+        plt.savefig(os.path.join(dir_name, f'TargetApproxNN.png'))
+        #plt.clf()
+        #plt.close()
+        plt.show()
+
+# We want to know how the theoretical and the experimental error evolves in terms of the number of hidden neurons (NN Approx)
+plt.figure(3)
+plt.figure(figsize=(8, 5))
+plt.loglog(total_neurons, min_loss_list, color='blue', label='Experimental NN Error')
+plt.loglog(total_neurons, min_loss_th_list, color='red', label='Theoretical NN Error')
+plt.title('Errors vs Hidden Neurons')
+plt.xlabel('Hidden Neurons')
+plt.ylabel('Error')
+plt.legend(loc='best')
+plt.grid(True)
+plt.savefig(os.path.join(dir_name, f'ErrorVsNeurons.png'))
+#plt.clf()
+#plt.close()
+plt.show()
+
+
 
