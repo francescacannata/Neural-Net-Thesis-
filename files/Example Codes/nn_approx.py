@@ -9,7 +9,7 @@ import copy
 import os
 
 
-def approx(x, y, n_Hid1, learning_rate, stepsize, gamma, units, epochs):
+def approx(x, y, units, learning_rate, stepsize, gamma, epochs):
     torch.manual_seed(1)
     n_in = x.shape[1]
     n_out = 1
@@ -24,8 +24,8 @@ def approx(x, y, n_Hid1, learning_rate, stepsize, gamma, units, epochs):
             # The function "nn.Linear(in_features, out_features)" applies an affine transformation to input data (x * W^T + b). It creates
             # the weight matrix of dimension (in_features, out_features) and the bias tensor of length in_features; it fills them with
             # random values. The bias argument is optional: by default is True, but one can disable it
-            self.InHid1 = nn.Linear(n_in, n_Hid1)       # it creates the input-weight matrix with shape (n_in, n_Hid1) and the input-bias vector with size n_in
-            self.Hid1Out = nn.Linear(n_Hid1, n_out)     # it creates the output-weight matrix with shape (n_Hid1, n_out) and the output-bias vector with size n_Hid1
+            self.InHid1 = nn.Linear(n_in, units)       # it creates the input-weight matrix with shape (n_in, n_Hid1) and the input-bias vector with size n_in
+            self.Hid1Out = nn.Linear(units, n_out)     # it creates the output-weight matrix with shape (n_Hid1, n_out) and the output-bias vector with size n_Hid1
             self.activation = nn.ReLU()                 # examples of non-linear activation functions: nn.ReLU(), nn.Tanh(), nn.Sigmoid(), nn.ELU() etc.
 
         # We need a function for establishing the order in which our data go through the layers
@@ -57,15 +57,12 @@ def approx(x, y, n_Hid1, learning_rate, stepsize, gamma, units, epochs):
 
     # Parameter's initialization
     with torch.no_grad():
-        # Bias
+        # Input Biases
         nn.init.uniform_(model.InHid1.bias, a=-1, b=1)
-        #print(f'Initialized bias: {model.InHid1.bias}')
 
-        # Weight -> random +-1 value
-        init_weights = torch.where(model.InHid1.weight <= 0, -1, 1)
-        #print(init_weights)
+        # Input Weights
+        init_weights = nn.init.uniform_(model.InHid1.weight, a=-1, b=1)
         model.InHid1.weight.copy_(init_weights)
-        #print(f'Initialized weight: {model.InHid1.weight}')
 
 
     # ---------- Training Loop ----------
@@ -117,7 +114,7 @@ def approx(x, y, n_Hid1, learning_rate, stepsize, gamma, units, epochs):
             # Print the epoch and the corresponding loss
             print(f"The current epoch is {(epoch+1)}/{epochs}. The loss is: ", loss.item())
 
-        # add the loss to the array
+        # add the loss and the learning_rate histories to the array
         loss_history[epoch] = loss.item()
         learning_rate_history[epoch] = scheduler.get_last_lr()[0]
 
@@ -154,3 +151,5 @@ def approx(x, y, n_Hid1, learning_rate, stepsize, gamma, units, epochs):
 
     # Print the minimum loss and its epoch
     print(f"The minimum loss is {(min_loss)} and its epoch is {(min_epoch+1)}")
+
+    return y_pred_final, min_loss
