@@ -35,28 +35,28 @@ def NN_func(x, seed=0, d=1, width=1):
 
     # Parameter's initialization
     with torch.no_grad():
-        nn.init.uniform_(model[0].bias, a=-1/2, b=1/2) # a = 0, b = 2
+        nn.init.uniform_(model[0].bias, a=0, b=0) # a = 0, b = 2
         nn.init.uniform_(model[0].weight, a=-1, b=1) # a = -2, b = -1
         nn.init.uniform_(model[2].bias, a=-1, b=1) # a = -1, b = 1
         nn.init.uniform_(model[2].weight, a=-1, b=1) # a = -1, b = 1
 
-        # evaluate the Euclidean norm of the input weight
+        # normalized the input weights
         input_weight_norm = model[0].weight.norm(dim=1, keepdim=True)
         print(f"input weight are {model[0].weight}")
         model[0].weight.copy_(model[0].weight / input_weight_norm)
         print(f'input normalized weight are {model[0].weight}')
 
 
-    #with torch.no_grad():
-        #p = torch.arange(1, width + 1) # Output weights: they have to sum up to 1 if we want the network in the variation space. Decay: 2^-p -> 1 for p -> \infty
-        # 1st decay
-        #decay = 1 / p**2
+    with torch.no_grad():
+        p = torch.arange(1, width + 1) # Output weights: they have to sum up to 1 if we want the network in the variation space. Decay: 2^-p -> 1 for p -> \infty
+        # 1st decay: polynomial
+        decay = 1 / p**2
 
-        # 2nd decay
+        # 2nd decay: exponential
         #decay = 2.0 ** (-p)
 
         # update the output weights
-        #model[2].weight.copy_(decay.view(1, -1))
+        model[2].weight.copy_(decay.view(1, -1))
 
     model.eval()
     print(f'input weights: {model[0].weight}')
