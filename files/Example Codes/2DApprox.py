@@ -39,74 +39,57 @@ args = parser.parse_args() # Convert argument strings to objects and assign them
 ---------------------------------------------"""
 # In order to have the same random generation each time (both in numpy and pytorch)
 np.random.seed(args.seed)
-#torch.manual_seed(args.seed)
 
 # Parameters
-N = args.size #2**8
-n = int(N/2)
-alpha = 1
-beta = 2.1                                              # beta > 2 for having a finite Barron norm
-omega = np.arange(1, n+1)                   # low and high frequencies
-phi = np.random.uniform(0, 2*math.pi, size=n)      # phase shift
-w = 1+np.abs(omega)                                     # weight function
-c = alpha / w**beta                                     # ansatz for the amplitude
-
-
-# Compute the norms
-barron_norm = np.sum(w * np.abs(c)) # Barron norm (p = 1)
-L2_norm = np.sum(np.square(c))      # L2 norm
-
-# Normalize the L2 norm -> \sum_{i = 1}^{n} |c_i| = 1 => \alpha_{norm} = 1 / np.sqrt(np.sum(np.square(1.0 / (w ** beta))))
-alpha_norm = 1 / np.sqrt(np.sum(np.square(1.0 / (w ** beta))))
-c_normalized = alpha_norm / w**beta
-L2_norm_normalized = np.sum(np.square(c_normalized))
-
-# Print the norms
-print(f'The barron norm is {barron_norm}. \n The normalized L2 norm is {L2_norm_normalized}')
+N = args.size #2**7 default
 
 # Define the spatial domain and call the target function NN_func
 x1 = np.linspace(-1,1,N).reshape(-1, 1)
 x2 = np.linspace(-1,1,N).reshape(-1, 1)
 X1, X2 = np.meshgrid(x1, x2)
-X = np.array([X1.ravel(), X2.ravel()]).T        # N**2 x 2
+X = np.array([X1.ravel(), X2.ravel()]).T        # dimension: N**2 x 2
 y = NN_func(X, width=4, d=2)
 print('Target function ready')
 
 
 # Target function visualization
-dir_name = f'results_N_{args.size}_bp_{args.bp}'
+dir_name = f'results_StepSize_{args.stepsize}_Epochs_{args.epochs}_HN_{args.units}_N_{args.size}_bp_{args.bp}'
 os.makedirs(dir_name, exist_ok=True)
 
-ax = plt.figure(1).add_subplot(111, projection='3d')
+ax = plt.figure(1, figsize=(10, 8)).add_subplot(111, projection='3d')
 #ax.contour(X1, X2, y.reshape((N,N)))
 ax.plot_surface(X1, X2, y.reshape((N,N)))
-plt.title(f'Function with Barron norm {barron_norm}')
-plt.xlabel('x')
-plt.ylabel('Target function')
-plt.grid(True)
+# ax.set_xlabel('$x_1$', fontsize=13)
+# ax.set_ylabel('$x_2$', fontsize=13)
+# ax.set_zlabel('$f(x_1, x_2)$', fontsize=13)
+#plt.tick_params(axis='both', labelsize=10)
+ax.set_xticks([-1, -0.5, 0, 0.5, 1])
+ax.set_yticks([-1, -0.5, 0, 0.5, 1])
+ax.set_zticks([-0.2, 0, 0.2, 0.4, 0.6, 0.8, 1.0, 1.2])
 
-plt.savefig(os.path.join(dir_name, f'Target Function.png'))
+plt.grid(True)
+#plt.title(f'Target function with Barron norm {barron_norm}')
+plt.savefig(os.path.join(dir_name, f'Target Function.png'), dpi=300)
 #plt.clf()
 #plt.close()
 plt.show()
 
 
 """----------------------------------------
- Goal: Piecewise linear interpolation
+ Goal: Piecewise linear approximation
 -------------------------------------------"""
-# Number of intervals m << N
+# Number of breakpoints m << N
 m = np.arange(1, args.bp)
 
-# Initialization error list
+# Initialization error lists
 error_list = []
 error_th = []
 
-# Iterate the hat function on all i to generate columns of the matrix phi
+# Iterate on the number of breakpoints
 for k in m:
-    # s = np.zeros(k+1)                         # Initialization x-values of the breakpoints for each m value
     phi = np.zeros((N**2, 2*(k+1), 2*(k+1)))    # Initialization matrix N x k with the values of the hat functions over x
 
-    # Define the values of s for each m value and generate the matrix's columns
+    # Iterate the hat function on both dimensions the matrix phi
     for j1 in range(-k, k+1):
       for j2 in range(-k, k+1):
           phi[:, j1+k, j2+k] = twodim_hat_function(X, np.array([j1,j2]).reshape((1,2)), k) # j_i + k because negative indices are at the end of the array. We are doing a translation from [-k, k] to [0, 2k]
@@ -114,37 +97,34 @@ for k in m:
             print(f'phi = {phi[:, j1, j2].reshape((N, N))}')
 
     phi_matrix = phi.reshape((N**2, (2*(k+1))**2))
-
-    # Solve the least square error and find the y-values of the breakpoints
     print(phi_matrix.shape)
+
+    # Solve the least square error and find the y-values of the breakpoints. Target function approximation with piecewise -> matrix product
     ls_result = np.linalg.lstsq(phi_matrix, y)
     t = ls_result[0]
-    #error = ls_result[1]
-    #print(f'The error is {error}')
-    #error_list.append(float(error[0]))
-    #error_th.append(float(1/k**2.5))
-
-    # Target function approximation with piecewise -> matrix product
     y_pred_PW = np.dot(phi_matrix, t)
     error = np.sum((y - y_pred_PW)**2) / N**2 # we are dividing for N**2 in order to have the same scale of the error obtained with the neural net approx
     error_list.append(float(error))
     error_th.append(float(1 / k ** 2.5))
 
-    # Final plot
+    # Final plot for a fixed number of breakpoints
     if k == 8:
-      ax = plt.figure(2).add_subplot(111, projection='3d')
+      ax = plt.figure(2, figsize=(10, 8)).add_subplot(111, projection='3d')
       # ax.contour(X1, X2, y.reshape((N,N)))
-      ax.plot_wireframe(X1, X2, y.reshape((N, N)), color='orange')
-      ax.plot_wireframe(X1, X2, y_pred_PW.reshape((N, N)), color='green')
+      ax.plot_wireframe(X1, X2, y.reshape((N, N)), color='C0')
+      ax.plot_wireframe(X1, X2, y_pred_PW.reshape((N, N)), color='C1')
       #ax.plot_surface(X1, X2, phi[:,1,1].reshape((N, N)))
       #ax.plot_surface(X1, X2, phi[:,2,2].reshape((N, N)))
       #plt.title(f'Hat functions (intervals = {k})')
-      plt.title(f'Target Function VS Piecewise Approximation (interval = {k})')
-      plt.xlabel('Input data')
-      plt.ylabel('Target function')
-      plt.legend(loc='best')
+      #plt.title(f'Target Function VS Piecewise Approximation (interval = {k})')
+      #plt.xlabel('Input data', fontsize=13)
+      #plt.ylabel('Target function', fontsize=13)
+      ax.set_xticks([-1, -0.5, 0, 0.5, 1])
+      ax.set_yticks([-1, -0.5, 0, 0.5, 1])
+      ax.set_zticks([-0.2, 0, 0.2, 0.4, 0.6, 0.8, 1.0, 1.2])
+      #plt.legend(loc='best')
       plt.grid(True)
-      plt.savefig(os.path.join(dir_name, f'TargetApproxPW.png'))
+      plt.savefig(os.path.join(dir_name, f'TargetApproxPW.png'), dpi=300)
       #plt.clf()
       #plt.close()
       plt.show()
@@ -157,23 +137,26 @@ print(error_list)
 
 # We want to know how the theoretical and the experimental error evolves in terms of the intervals (Piecewise Approx)
 plt.figure(2)
-plt.figure(figsize=(8, 5))
-plt.loglog(m, error_list, color='blue', label='Experimental Error')
-plt.loglog(m, error_th, color='red', label='Theoretical Error')
-plt.title('Errors vs Intervals')
-plt.xlabel('Intervals')
-plt.ylabel('Error')
+plt.figure(figsize=(10, 8))
+plt.loglog(m, error_list, color='C1', label='Experimental Error', linewidth=2)
+plt.loglog(m, error_th, color='purple', label='Theoretical Error', linewidth=2)
+#plt.title('Errors vs Intervals')
+plt.xlabel('Intervals', fontsize=13)
+plt.ylabel('Error', fontsize=13)
 plt.legend(loc='best')
-plt.grid(True)
-plt.savefig(os.path.join(dir_name, f'ErrorVsIntervals.png'))
+plt.tick_params(axis='both', labelsize=10)
+plt.legend(loc='best', fontsize=13)
+plt.grid(True, which='major', linewidth=0.8)
+plt.grid(True, which='minor', linewidth=0.3, linestyle=':')
+plt.savefig(os.path.join(dir_name, f'ErrorVsIntervals.png'), dpi=300)
 #plt.clf()
 #plt.close()
 plt.show()
 
+
 """----------------------------------------
  Goal: Neural Network approximation
 -------------------------------------------"""
-
 # Target function approximation with Neural network
 X_tensor = torch.tensor(X, dtype=torch.float32)
 y_tensor = torch.tensor(y, dtype=torch.float32)
@@ -181,42 +164,49 @@ total_neurons = []
 min_loss_list = []
 min_loss_th_list = []
 
-
+# Iterate on the number of hidden neurons. arg.units is the maximum number of hidden neurons of the approximating network
 for neurons in range(1, args.units+1):
     y_pred_NN, min_loss = approx(X_tensor, y_tensor, neurons, 0.01, args.stepsize, 0.3, args.epochs)
     total_neurons.append(neurons)
     min_loss_list.append(float(min_loss))
     min_loss_th_list.append(float(1/neurons))
 
-    # Neural Network approximation plot
+    # Neural Network approximation plot for a fixed number of hidden neurons
     if neurons == 10:
-        ax = plt.figure(3).add_subplot(111, projection='3d')
-        ax.plot_wireframe(X1, X2, y.reshape((N, N)), color='orange')
-        ax.plot_wireframe(X1, X2, y_pred_NN.reshape((N, N)), color='green')
-        plt.title(f'Target Function VS Neural network approximation (Hidden Neurons = {neurons})')
-        plt.xlabel('Input data')
-        plt.ylabel('Target function')
+        ax = plt.figure(3, figsize=(10, 8)).add_subplot(111, projection='3d')
+        ax.plot_wireframe(X1, X2, y.reshape((N, N)), color='C0')
+        ax.plot_wireframe(X1, X2, y_pred_NN.reshape((N, N)), color='C2')
+        #plt.title(f'Target Function VS Neural network approximation (Hidden Neurons = {neurons})')
+        # plt.xlabel('Input data', fontsize=13)
+        # plt.ylabel('Target function', fontsize=13)
+        ax.set_xticks([-1, -0.5, 0, 0.5, 1])
+        ax.set_yticks([-1, -0.5, 0, 0.5, 1])
+        ax.set_zticks([-0.2, 0, 0.2, 0.4, 0.6, 0.8, 1.0, 1.2])
         plt.legend(loc='best')
         plt.grid(True)
-        plt.savefig(os.path.join(dir_name, f'TargetApproxNN.png'))
+        plt.savefig(os.path.join(dir_name, f'TargetApproxNN.png'), dpi=300)
         #plt.clf()
         #plt.close()
         plt.show()
 
+# Save the min_loss_list
+pd.DataFrame(min_loss_list, columns=['min_loss']).to_csv(os.path.join(dir_name, 'min_loss.csv'), index=False)
+
 # We want to know how the theoretical and the experimental error evolves in terms of the number of hidden neurons (NN Approx)
 plt.figure(3)
-plt.figure(figsize=(8, 5))
-plt.loglog(total_neurons, min_loss_list, color='blue', label='Experimental NN Error')
-plt.loglog(total_neurons, min_loss_th_list, color='red', label='Theoretical NN Error')
-plt.title('Errors vs Hidden Neurons')
-plt.xlabel('Hidden Neurons')
-plt.ylabel('Error')
-plt.legend(loc='best')
-plt.grid(True)
-plt.savefig(os.path.join(dir_name, f'ErrorVsNeurons.png'))
+plt.figure(figsize=(10, 8))
+plt.loglog(total_neurons, min_loss_list, color='C2', label='Experimental NN Error', linewidth=2)
+plt.loglog(total_neurons, min_loss_th_list, color='purple', label='Theoretical NN Error', linewidth=2)
+plt.xlabel('Hidden Neurons', fontsize=13)
+plt.ylabel('Error', fontsize=13)
+plt.tick_params(axis='both', labelsize=10)
+plt.legend(loc='best', fontsize=13)
+plt.grid(True, which='major', linewidth=0.8)
+plt.grid(True, which='minor', linewidth=0.3, linestyle=':')
+#plt.title('Errors vs Hidden Neurons')
+plt.savefig(os.path.join(dir_name, f'ErrorVsNeurons.png'), dpi=300)
 #plt.clf()
 #plt.close()
 plt.show()
-
 
 
