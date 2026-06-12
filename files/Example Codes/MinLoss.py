@@ -19,7 +19,7 @@ loss_array_seeds = []
 
 # folder's path
 path = '/Users/francesca/Desktop/2DresultPlots'
-dir_name = f'results_StepSize_{args.stepsize}_Epochs_{args.epochs}_HN_{args.units}_N_{args.size}_bp_{args.bp}_seed_{args.seed}'
+dir_name = f'MinLoss_StepSize_{args.stepsize}_Epochs_{args.epochs}_HN_{args.units}_N_{args.size}_bp_{args.bp}_seed_{args.seed}'
 
 # Load the min_loss_seed_{args.seed} file for each seed
 for seed in args.seeds:
