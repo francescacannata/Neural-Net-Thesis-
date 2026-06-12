@@ -58,7 +58,7 @@ def approx(x, y, units, learning_rate, stepsize, gamma, epochs):
     # Parameter's initialization
     with torch.no_grad():
         # Input Biases
-        nn.init.uniform_(model.InHid1.bias, a=-1, b=1)
+        nn.init.uniform_(model.InHid1.bias, a=0, b=0)
 
         # Input Weights
         init_weights = nn.init.uniform_(model.InHid1.weight, a=-1, b=1)
