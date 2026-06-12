@@ -9,8 +9,8 @@ import copy
 import os
 
 
-def approx(x, y, units, learning_rate, stepsize, gamma, epochs):
-    torch.manual_seed(1)
+def approx(x, y, units, learning_rate, stepsize, gamma, epochs, seed):
+    torch.manual_seed(seed)
     n_in = x.shape[1]
     n_out = 1
 
