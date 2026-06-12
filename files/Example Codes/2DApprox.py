@@ -190,7 +190,7 @@ for neurons in range(1, args.units+1):
         plt.show()
 
 # Save the min_loss_list
-pd.DataFrame(min_loss_list, columns=['min_loss']).to_csv(os.path.join(dir_name, 'min_loss.csv'), index=False)
+pd.DataFrame(min_loss_list, columns=['min_loss']).to_csv(os.path.join(dir_name, f'min_loss_seed_{args.seed}.csv'), index=False)
 
 # We want to know how the theoretical and the experimental error evolves in terms of the number of hidden neurons (NN Approx)
 plt.figure(3)
