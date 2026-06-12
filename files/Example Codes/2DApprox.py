@@ -86,9 +86,9 @@ plt.ylabel('Target function')
 plt.grid(True)
 
 plt.savefig(os.path.join(dir_name, f'Target Function.png'))
-plt.clf()
-plt.close()
-#plt.show()
+#plt.clf()
+#plt.close()
+plt.show()
 
 
 """----------------------------------------
@@ -107,8 +107,8 @@ for k in m:
     phi = np.zeros((N**2, 2*(k+1), 2*(k+1)))    # Initialization matrix N x k with the values of the hat functions over x
 
     # Define the values of s for each m value and generate the matrix's columns
-    for j1 in range(-k, k):
-      for j2 in range(-k, k):
+    for j1 in range(-k, k+1):
+      for j2 in range(-k, k+1):
           phi[:, j1+k, j2+k] = twodim_hat_function(X, np.array([j1,j2]).reshape((1,2)), k) # j_i + k because negative indices are at the end of the array. We are doing a translation from [-k, k] to [0, 2k]
           if j1 == 0 and j2 == 0 and k==8:
             print(f'phi = {phi[:, j1, j2].reshape((N, N))}')
@@ -126,7 +126,7 @@ for k in m:
 
     # Target function approximation with piecewise -> matrix product
     y_pred_PW = np.dot(phi_matrix, t)
-    error = np.sum((y - y_pred_PW)**2)
+    error = np.sum((y - y_pred_PW)**2) / N**2 # we are dividing for N**2 in order to have the same scale of the error obtained with the neural net approx
     error_list.append(float(error))
     error_th.append(float(1 / k ** 2.5))
 
@@ -145,14 +145,15 @@ for k in m:
       plt.legend(loc='best')
       plt.grid(True)
       plt.savefig(os.path.join(dir_name, f'TargetApproxPW.png'))
-      plt.clf()
-      plt.close()
-      #plt.show()
+      #plt.clf()
+      #plt.close()
+      plt.show()
 
 # Theoretical piecewise error
 c_err = error_list[-1] / error_th[-1]
 error_th = c_err * np.array(error_th)
 print(error_th)
+print(error_list)
 
 # We want to know how the theoretical and the experimental error evolves in terms of the intervals (Piecewise Approx)
 plt.figure(2)
@@ -165,9 +166,9 @@ plt.ylabel('Error')
 plt.legend(loc='best')
 plt.grid(True)
 plt.savefig(os.path.join(dir_name, f'ErrorVsIntervals.png'))
-plt.clf()
-plt.close()
-#plt.show()
+#plt.clf()
+#plt.close()
+plt.show()
 
 """----------------------------------------
  Goal: Neural Network approximation
@@ -198,9 +199,9 @@ for neurons in range(1, args.units+1):
         plt.legend(loc='best')
         plt.grid(True)
         plt.savefig(os.path.join(dir_name, f'TargetApproxNN.png'))
-        plt.clf()
-        plt.close()
-        #plt.show()
+        #plt.clf()
+        #plt.close()
+        plt.show()
 
 # We want to know how the theoretical and the experimental error evolves in terms of the number of hidden neurons (NN Approx)
 plt.figure(3)
@@ -213,9 +214,9 @@ plt.ylabel('Error')
 plt.legend(loc='best')
 plt.grid(True)
 plt.savefig(os.path.join(dir_name, f'ErrorVsNeurons.png'))
-plt.clf()
-plt.close()
-#plt.show()
+#plt.clf()
+#plt.close()
+plt.show()
 
 
 
