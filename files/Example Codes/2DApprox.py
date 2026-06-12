@@ -166,7 +166,7 @@ min_loss_th_list = []
 
 # Iterate on the number of hidden neurons. arg.units is the maximum number of hidden neurons of the approximating network
 for neurons in range(1, args.units+1):
-    y_pred_NN, min_loss = approx(X_tensor, y_tensor, neurons, 0.01, args.stepsize, 0.3, args.epochs)
+    y_pred_NN, min_loss = approx(X_tensor, y_tensor, neurons, 0.01, args.stepsize, 0.3, args.epochs, args.seed)
     total_neurons.append(neurons)
     min_loss_list.append(float(min_loss))
     min_loss_th_list.append(float(1/neurons))
