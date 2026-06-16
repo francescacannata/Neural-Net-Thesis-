@@ -48,7 +48,7 @@ x1 = np.linspace(-1,1,N).reshape(-1, 1)
 x2 = np.linspace(-1,1,N).reshape(-1, 1)
 X1, X2 = np.meshgrid(x1, x2)
 X = np.array([X1.ravel(), X2.ravel()]).T        # dimension: N**2 x 2
-y = NN_func(X, width=30, d=2)
+y = NN_func(X, width=1, d=2)
 print('Target function ready')
 
 
