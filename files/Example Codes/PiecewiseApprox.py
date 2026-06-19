@@ -62,18 +62,20 @@ print(f'The barron norm is {barron_norm}. \n The normalized L2 norm is {L2_norm_
 
 # Define the spatial domain and call the barron_func
 x = np.linspace(0,1,N).reshape(-1, 1)
-y = NN_func(x, width=4) # y = piecewise_func(x)
+y = barron_func(c, omega, x, phi)
+#y = piecewise_func(x) #y = NN_func(x, width=4)
 
 
 # Barron function visualization
-plt.figure(1)
-plt.plot(x, y, color='red', linewidth=2)
-plt.title(f'Function with Barron norm {barron_norm}')
-plt.xlabel('x')
-plt.ylabel('Target function')
+plt.figure(1, figsize=(10, 8))
+plt.plot(x, y, color='C0', linewidth=3)
+#plt.title(f'Function with Barron norm {barron_norm}')
+plt.xlabel('x', fontsize=13)
+plt.ylabel('Target function $f_{targ}(x)$', fontsize=13)
 plt.grid(True)
 plt.show()
 # plt.close()
+
 
 
 """----------------------------------------
@@ -104,9 +106,9 @@ for k in m:
   # Solve the least square error and find the y-values of the breakpoints
   ls_result = np.linalg.lstsq(phi_matrix, y)
   t = ls_result[0]
-  error = ls_result[1]
+  error = np.sqrt(ls_result[1])
   error_list.append(float(error[0]))
-  error_th.append(float(1/k**2.5)) # 1/k**2
+  error_th.append(float(1/k**(1.4174))) # 1/k**2
 
   # Target function approximation -> matrix product
   y_pred = np.dot(phi_matrix, t)
@@ -119,35 +121,40 @@ for k in m:
 
 
   # Final plot
-  if k == 14:
-      plt.figure(2)
-      plt.plot(x, y, label='Target function', color='green', linewidth=2)
-      plt.plot(x, y_pred, label='Piecewise Approximation', color='red')
-      plt.plot(x, phi_matrix[:,-1], label='Hat function', color='blue')
-      plt.title(f'Target Function VS Piecewise Approximation (intervals = {k})')
-      plt.xlabel('Input data')
-      plt.ylabel('Target function')
-      plt.legend(loc='best')
-      plt.grid(True)
+  if k == 99:
+      plt.figure(2, figsize=(10, 8))
+      plt.plot(x, y, label='Target function', color='C0', linewidth=3)
+      plt.plot(x, y_pred, linestyle='--', label='Piecewise linear approximation', color='C1', linewidth=2.5)
+      #plt.plot(x, phi_matrix[:,-1], label='Hat function', color='blue')
+      #plt.title(f'Target Function VS Piecewise Approximation (intervals = {k})')
+      plt.xlabel('x', fontsize=13)
+      #plt.ylabel('Target function and approximation')
+      plt.legend(loc='best', fontsize=12)
+      plt.grid(True, alpha=0.5)
       plt.show()
 
 
-# TODO: evaluate the constant
 c_err = error_list[-1] / error_th[-1]
 error_th = c_err * np.array(error_th)
 print(error_th)
 
+# Fit lineare su log-log (escludi i primi valori dove il transitorio è grande)
+log_k = np.log(m[10:])        # escludi i primi 10 punti
+log_e = np.log(error_list[10:])
+
+coeffs = np.polyfit(log_k, log_e, 1)
+slope = coeffs[0]
+print(f'Estimated exponent: {slope:.4f}')  # dovrebbe essere circa -1.25
 
 # We want to know how the theoretical and the experimental error evolves in terms of the intervals
 
-plt.figure(2)
-plt.figure(figsize=(8, 5))
-plt.loglog(m, error_list, color='blue', label='Experimental Error')
-plt.loglog(m, error_th, color='red', label='Theoretical Error')
-plt.title('Errors vs Intervals')
-plt.xlabel('Intervals')
-plt.ylabel('Error')
-plt.legend(loc='best')
-plt.grid(True)
+plt.figure(3, figsize=(10, 8))
+plt.loglog(m, error_list, color='C1', label='Experimental error', linewidth=2.3)
+plt.loglog(m, error_th, color='purple', label='Theoretical error $\propto k^{-1.41}$', linewidth=2.3)
+#plt.title('Errors vs Intervals')
+plt.xlabel('Intervals $k$', fontsize=13)
+plt.ylabel('Least-squared error', fontsize=13)
+plt.legend(loc='best', fontsize=12)
+plt.grid(True, alpha=0.5)
 plt.show()
 
