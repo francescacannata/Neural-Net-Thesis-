@@ -108,7 +108,7 @@ for k in m:
   t = ls_result[0]
   error = np.sqrt(ls_result[1])
   error_list.append(float(error[0]))
-  error_th.append(float(1/k**(1.4174))) # 1/k**2
+  error_th.append(float(1/k**(1.4824))) # 1/k**2
 
   # Target function approximation -> matrix product
   y_pred = np.dot(phi_matrix, t)
@@ -127,11 +127,15 @@ for k in m:
       plt.plot(x, y_pred, linestyle='--', label='Piecewise linear approximation', color='C1', linewidth=2.5)
       #plt.plot(x, phi_matrix[:,-1], label='Hat function', color='blue')
       #plt.title(f'Target Function VS Piecewise Approximation (intervals = {k})')
-      plt.xlabel('x', fontsize=13)
+      plt.xlabel('x', fontsize=16)
+      plt.tick_params(axis='both', labelsize=14)
       #plt.ylabel('Target function and approximation')
-      plt.legend(loc='best', fontsize=12)
+      plt.legend(loc='best', fontsize=13)
       plt.grid(True, alpha=0.5)
+      plt.savefig(f'BarronPiecewiseApprox.pdf', bbox_inches='tight', dpi=300)
       plt.show()
+
+
 
 
 c_err = error_list[-1] / error_th[-1]
@@ -150,11 +154,13 @@ print(f'Estimated exponent: {slope:.4f}')  # dovrebbe essere circa -1.25
 
 plt.figure(3, figsize=(10, 8))
 plt.loglog(m, error_list, color='C1', label='Experimental error', linewidth=2.3)
-plt.loglog(m, error_th, color='purple', label='Theoretical error $\propto k^{-1.41}$', linewidth=2.3)
+plt.loglog(m, error_th, color='purple', label='Theoretical error $\propto k^{-1.48}$', linewidth=2.3)
 #plt.title('Errors vs Intervals')
-plt.xlabel('Intervals $k$', fontsize=13)
-plt.ylabel('Least-squared error', fontsize=13)
-plt.legend(loc='best', fontsize=12)
+plt.xlabel('Intervals $k$', fontsize=16)
+plt.ylabel('Least-squared error', fontsize=16)
+plt.tick_params(axis='both', labelsize=14)
+plt.legend(loc='best', fontsize=13)
 plt.grid(True, alpha=0.5)
+plt.savefig( f'LossPiecewiseApprox.pdf', bbox_inches='tight', dpi=300)
 plt.show()
 
