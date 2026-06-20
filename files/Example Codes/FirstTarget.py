@@ -222,7 +222,7 @@ plt.savefig(os.path.join(f'results_InitLR_{args.lr}_StepSize_{args.stepsize}', f
 
 
 plt.figure(3, figsize=(10,8))
-plt.semilogy(loss_history, label='Training loss', color='limegreen', linewidth=2)
+plt.semilogy(loss_history, label='Training loss', color='limegreen', linewidth=2.5)
 plt.xlabel('Epochs', fontsize=16)
 plt.tick_params(axis='x', rotation=45)
 plt.ylabel('MSE loss', fontsize=16)
