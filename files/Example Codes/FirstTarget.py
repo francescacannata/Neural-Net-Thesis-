@@ -217,6 +217,9 @@ plt.tick_params(axis='both', labelsize=14)
 plt.legend(loc='best', fontsize=13)
 plt.grid(True, alpha=0.5)
 
+os.makedirs(f'results_InitLR_{args.lr}_StepSize_{args.stepsize}', exist_ok=True) # it creates a new folder
+plt.savefig(os.path.join(f'results_InitLR_{args.lr}_StepSize_{args.stepsize}', f'Approx_Epochs_{args.epochs}_HidNeurons_{args.units}.png'), bbox_inches='tight', dpi=300 )
+
 
 plt.figure(3, figsize=(10,8))
 plt.semilogy(loss_history, label='Training loss', color='limegreen', linewidth=2)
@@ -228,7 +231,7 @@ plt.grid(True, alpha=0.5)
 
 
 os.makedirs(f'results_InitLR_{args.lr}_StepSize_{args.stepsize}', exist_ok=True) # it creates a new folder
-plt.savefig(os.path.join(f'results_InitLR_{args.lr}_StepSize_{args.stepsize}', f'LossApprox_Epochs_{args.epochs}_HidNeurons_{args.units}.png'), bbox_inches='tight', dpi=300 )
+plt.savefig(os.path.join(f'results_InitLR_{args.lr}_StepSize_{args.stepsize}', f'Loss_Epochs_{args.epochs}_HidNeurons_{args.units}.png'), bbox_inches='tight', dpi=300 )
 plt.clf() # clear fig
 plt.close() # close fig
 #plt.show()
