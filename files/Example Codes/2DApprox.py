@@ -53,7 +53,7 @@ print('Target function ready')
 
 
 # Target function visualization
-dir_name = f'results_StepSize_{args.stepsize}_Epochs_{args.epochs}_HN_{args.units}_N_{args.size}_bp_{args.bp}_seed_{args.seed}'
+dir_name = f'resultsW2_StepSize_{args.stepsize}_Epochs_{args.epochs}_HN_{args.units}_N_{args.size}_bp_{args.bp}_seed_{args.seed}'
 os.makedirs(dir_name, exist_ok=True)
 
 ax = plt.figure(1, figsize=(10, 8)).add_subplot(111, projection='3d')
