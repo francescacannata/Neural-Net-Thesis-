@@ -24,8 +24,8 @@ parser.add_argument('--seed', type=int, default=0, help='Random seed (default: 0
 #parser.add_argument('--lr', type=float, default=0.01, help='Initial learning rate (default: 0.01).')
 parser.add_argument('--stepsize', type=int, default=1000, help='Step size for the scheduler (default: 100k).')
 #parser.add_argument('--gamma', type=float, default=0.1, help='Multiplicative factor for the scheduler (default: 0.1).')
-parser.add_argument('--epochs', type=int, default=5000, help='Number of epochs (default: 100).')
-parser.add_argument('--units', type=int, default=20, help='Numbers of hidden neurons (default: 10).')
+parser.add_argument('--epochs', type=int, default=10000, help='Number of epochs (default: 100).')
+parser.add_argument('--units', type=int, default=50, help='Numbers of hidden neurons (default: 10).')
 parser.add_argument('--size', type=int, default=2**7, help='Size of input data (default: 2**7).')
 parser.add_argument('--bp', type=int, default=10, help='Number of breakpoints (default: 10).')
 
@@ -48,7 +48,7 @@ x1 = np.linspace(-1,1,N).reshape(-1, 1)
 x2 = np.linspace(-1,1,N).reshape(-1, 1)
 X1, X2 = np.meshgrid(x1, x2)
 X = np.array([X1.ravel(), X2.ravel()]).T        # dimension: N**2 x 2
-y = NN_func(X, width=1, d=2) # change the width from 1 to 4
+y = NN_func(X, width=2, d=2) # change the width from 1 to 4
 print('Target function ready')
 
 
@@ -68,7 +68,7 @@ ax.set_zticks([-0.2, 0, 0.2, 0.4, 0.6, 0.8, 1.0, 1.2])
 ax.tick_params(axis='both', labelsize=12)
 plt.grid(True, alpha=0.5)
 ax.view_init(elev=15, azim=-35)
-plt.savefig(os.path.join(dir_name, f'Target2DFunction_pol.pdf'), bbox_inches='tight', dpi=300)
+plt.savefig(os.path.join(dir_name, f'Target2DFunction_exp_W2.pdf'), bbox_inches='tight', dpi=300)
 plt.clf()
 plt.close()
 #plt.show()
