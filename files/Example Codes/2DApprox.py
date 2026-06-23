@@ -27,7 +27,7 @@ parser.add_argument('--stepsize', type=int, default=100, help='Step size for the
 parser.add_argument('--epochs', type=int, default=1000, help='Number of epochs (default: 100).')
 parser.add_argument('--units', type=int, default=20, help='Numbers of hidden neurons (default: 10).')
 parser.add_argument('--size', type=int, default=2**7, help='Size of input data (default: 2**7).')
-parser.add_argument('--bp', type=int, default=10, help='Number of breakpoints (default: 10).')
+parser.add_argument('--bp', type=int, default=20, help='Number of breakpoints (default: 10).')
 
 args = parser.parse_args() # Convert argument strings to objects and assign them as attributes of the namespace
 #print(f'This is the network\'s setting. \n Seed = {args.seed} \n Number of hidden neurons = {args.units}')
@@ -48,12 +48,12 @@ x1 = np.linspace(-1,1,N).reshape(-1, 1)
 x2 = np.linspace(-1,1,N).reshape(-1, 1)
 X1, X2 = np.meshgrid(x1, x2)
 X = np.array([X1.ravel(), X2.ravel()]).T        # dimension: N**2 x 2
-y = NN_func(X, width=4, d=2) # change the width from 1 to 4
+y = NN_func(X, width=2, d=2) # change the width from 1 to 4
 print('Target function ready')
 
 
 # Target function visualization
-dir_name = f'resultsW4exp_StepSize_{args.stepsize}_Epochs_{args.epochs}_HN_{args.units}_N_{args.size}_bp_{args.bp}_seed_{args.seed}'
+dir_name = f'resultsW2exp_StepSize_{args.stepsize}_Epochs_{args.epochs}_HN_{args.units}_N_{args.size}_bp_{args.bp}_seed_{args.seed}'
 os.makedirs(dir_name, exist_ok=True)
 
 ax = plt.figure(1, figsize=(10, 8)).add_subplot(111, projection='3d')
@@ -67,8 +67,8 @@ ax.set_yticks([-1, -0.5, 0, 0.5, 1])
 ax.set_zticks([-0.2, 0, 0.2, 0.4, 0.6, 0.8, 1.0, 1.2])
 ax.tick_params(axis='both', labelsize=12)
 plt.grid(True, alpha=0.5)
-ax.view_init(elev=15, azim=-35)
-plt.savefig(os.path.join(dir_name, f'Target2DFunction.pdf'), bbox_inches='tight', dpi=300)
+ax.view_init(elev=15, azim=50)
+plt.savefig(f'Target2DFunction_W2_exp.pdf', bbox_inches='tight', dpi=300)
 plt.clf()
 plt.close()
 #plt.show()
@@ -143,7 +143,7 @@ error_th = [1 / k ** -slope for k in m]
 c_err = error_list[-1] / error_th[-1]
 error_th = c_err * np.array(error_th)
 
-pd.DataFrame({'k': m, 'error': error_list, 'error_th': error_th}).to_csv(os.path.join(dir_name, f'PwErrors_pol.csv'), index=False)
+pd.DataFrame({'k': m, 'error': error_list, 'error_th': error_th}).to_csv(f'PwErrors_W2_exp.csv', index=False)
 
 print(error_th)
 print(error_list)
@@ -159,7 +159,7 @@ plt.legend(loc='best', fontsize=13)
 plt.grid(True, which='major', linewidth=0.8)
 plt.grid(True, which='minor', linewidth=0.3, linestyle=':')
 #plt.savefig(f'LSEVsIntervals_pol.pdf', bbox_inches='tight', dpi=300)
-plt.savefig(os.path.join(dir_name, f'LSEVsIntervals_pol.pdf'), bbox_inches='tight', dpi=300)
+#plt.savefig(os.path.join(dir_name, f'LSEVsIntervals_pol.pdf'), bbox_inches='tight', dpi=300)
 plt.clf()
 plt.close()
 #plt.show()
