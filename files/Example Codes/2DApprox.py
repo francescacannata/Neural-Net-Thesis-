@@ -48,12 +48,12 @@ x1 = np.linspace(-1,1,N).reshape(-1, 1)
 x2 = np.linspace(-1,1,N).reshape(-1, 1)
 X1, X2 = np.meshgrid(x1, x2)
 X = np.array([X1.ravel(), X2.ravel()]).T        # dimension: N**2 x 2
-y = NN_func(X, width=2, d=2) # change the width from 1 to 4
+y = NN_func(X, width=1, d=2) # change the width from 1 to 4
 print('Target function ready')
 
 
 # Target function visualization
-dir_name = f'resultsW2exp_StepSize_{args.stepsize}_Epochs_{args.epochs}_HN_{args.units}_N_{args.size}_bp_{args.bp}_seed_{args.seed}'
+dir_name = f'resultsW1exp_StepSize_{args.stepsize}_Epochs_{args.epochs}_HN_{args.units}_N_{args.size}_bp_{args.bp}_seed_{args.seed}'
 os.makedirs(dir_name, exist_ok=True)
 
 ax = plt.figure(1, figsize=(10, 8)).add_subplot(111, projection='3d')
@@ -143,7 +143,7 @@ error_th = [1 / k ** -slope for k in m]
 c_err = error_list[-1] / error_th[-1]
 error_th = c_err * np.array(error_th)
 
-pd.DataFrame({'k': m, 'error': error_list, 'error_th': error_th}).to_csv(f'PwErrors_W2_exp.csv', index=False)
+pd.DataFrame({'k': m, 'error': error_list, 'error_th': error_th}).to_csv(f'PwErrors_W1_exp.csv', index=False)
 
 print(error_th)
 print(error_list)
