@@ -48,12 +48,12 @@ x1 = np.linspace(-1,1,N).reshape(-1, 1)
 x2 = np.linspace(-1,1,N).reshape(-1, 1)
 X1, X2 = np.meshgrid(x1, x2)
 X = np.array([X1.ravel(), X2.ravel()]).T        # dimension: N**2 x 2
-y = NN_func(X, width=2, d=2) # change the width from 1 to 4
+y = NN_func(X, width=3, d=2) # change the width from 1 to 4
 print('Target function ready')
 
 
 # Target function visualization
-dir_name = f'resultsW2noDec_StepSize_{args.stepsize}_Epochs_{args.epochs}_HN_{args.units}_N_{args.size}_bp_{args.bp}_seed_{args.seed}'
+dir_name = f'resultsW3noDec_StepSize_{args.stepsize}_Epochs_{args.epochs}_HN_{args.units}_N_{args.size}_bp_{args.bp}_seed_{args.seed}'
 os.makedirs(dir_name, exist_ok=True)
 
 ax = plt.figure(1, figsize=(10, 8)).add_subplot(111, projection='3d')
@@ -68,7 +68,7 @@ ax.set_zticks([-0.2, 0, 0.2, 0.4, 0.6, 0.8, 1.0, 1.2])
 ax.tick_params(axis='both', labelsize=12)
 plt.grid(True, alpha=0.5)
 ax.view_init(elev=20, azim=60)
-plt.savefig(f'Target2DFunction_W2_noDec.pdf', bbox_inches='tight', dpi=300)
+plt.savefig(f'Target2DFunction_W3_noDec.pdf', bbox_inches='tight', dpi=300)
 #plt.clf()
 #plt.close()
 plt.show()
