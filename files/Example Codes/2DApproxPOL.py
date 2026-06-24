@@ -53,7 +53,7 @@ print('Target function ready')
 
 
 # Target function visualization
-dir_name = f'resultsW5pol_StepSize_{args.stepsize}_Epochs_{args.epochs}_HN_{args.units}_N_{args.size}_bp_{args.bp}_seed_{args.seed}'
+dir_name = f'resultsW2noDec_StepSize_{args.stepsize}_Epochs_{args.epochs}_HN_{args.units}_N_{args.size}_bp_{args.bp}_seed_{args.seed}'
 os.makedirs(dir_name, exist_ok=True)
 
 ax = plt.figure(1, figsize=(10, 8)).add_subplot(111, projection='3d')
@@ -68,7 +68,7 @@ ax.set_zticks([-0.2, 0, 0.2, 0.4, 0.6, 0.8, 1.0, 1.2])
 ax.tick_params(axis='both', labelsize=12)
 plt.grid(True, alpha=0.5)
 ax.view_init(elev=20, azim=60)
-plt.savefig(f'Target2DFunction_W5_pol.pdf', bbox_inches='tight', dpi=300)
+plt.savefig(f'Target2DFunction_W2_noDec.pdf', bbox_inches='tight', dpi=300)
 #plt.clf()
 #plt.close()
 plt.show()
@@ -143,7 +143,7 @@ error_th = [1 / k ** -slope for k in m]
 c_err = error_list[-1] / error_th[-1]
 error_th = c_err * np.array(error_th)
 
-pd.DataFrame({'k': m, 'error': error_list, 'error_th': error_th}).to_csv(f'PwErrors_W5_pol.csv', index=False)
+pd.DataFrame({'k': m, 'error': error_list, 'error_th': error_th}).to_csv(f'PwErrors_W2_noDec.csv', index=False)
 
 print(error_th)
 print(error_list)
