@@ -47,8 +47,8 @@ def NN_func(x, seed=0, d=1, width=1):
         print(f'input normalized weight are {model[0].weight}')
 
 
-    with torch.no_grad():
-        p = torch.arange(1, width + 1) # Output weights: they have to sum up to 1 if we want the network in the variation space. Decay: 2^-p -> 1 for p -> \infty
+    #with torch.no_grad():
+        #p = torch.arange(1, width + 1) # Output weights: they have to sum up to 1 if we want the network in the variation space. Decay: 2^-p -> 1 for p -> \infty
         # 1st decay: polynomial
         decay = 1 / p**2
 
@@ -56,7 +56,7 @@ def NN_func(x, seed=0, d=1, width=1):
         #decay = 2.0 ** (-p)
 
         # update the output weights
-        model[2].weight.copy_(decay.view(1, -1))
+        #model[2].weight.copy_(decay.view(1, -1))
 
     model.eval()
     print(f'input weights: {model[0].weight}')
